@@ -1,0 +1,4 @@
+[submodule "Hyperspectral_Data_Simulation"]
+	path = Hyperspectral_Data_Simulation
+	url = https://github.com/GatorSense/Hyperspectral_Data_Simulation
+	branch = master
