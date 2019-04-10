@@ -18,7 +18,7 @@ A hyperspectral simulation demo is provided in hyperspectralDataSimulation. To r
     
     simulateHyperspectral.m
     
-If you are using this algorithm on your own data please see the template code provided in exampleMain.
+If you are using this algorithm on your own data, please see the template code provided in exampleMain.
 
 The command to run algorithm:
 
