@@ -1,10 +1,11 @@
-# MTMIACE
-Multi Target - Multiple Instance - Adaptive Cosine Estimator 
+# Multi-target MI-ACE and MI-SMF
+
+Multi Target - Multiple Instance - Adaptive Cosine Estimator and Multiple Instance - Spectral Match Filter
 Matlab Implementation
 
 ****************************************************************
 
-NOTE: If the MTMIACE Algorithm is used in any publication or presentation, the following reference must be cited:  
+NOTE: If the Multi-target MI-ACE and MI-SMF Algorithm is used in any publication or presentation, the following reference must be cited: 
 J. Bocinsky, A. Zare
 
 NOTE: If this code is used in any publication or presentation, the following reference must be cited:
@@ -13,7 +14,7 @@ J. Bocinsky, A. Zare. (2019, April 09). GatorSense/MTMIACE: Version 1 (Version v
 ****************************************************************
 
 
-The command to run MTMIACE:
+The command to run:
 
 results{iter} = miTargets(data, parameters);
 
@@ -43,8 +44,6 @@ parameters:
     negLabel: what denotes a negative bag's label. ex) 0
     abs: taking absolute value of confidences
     softmaxFlag: (boolean) Not yet implemented, keep set to 0
-    samplePor: (0 -> 1) percentage in decimal form of positive data points used for init type 1
-
 
 
 Output:
@@ -69,5 +68,3 @@ results:
               * to a positive bag and a negLabel corresponds to a negative bag.
               * The index of the label should match the index of the bag in dataBags
             
-The code is still being developed and not all init types may work. This code was revamped from single target to multi target and therefor not all functionality may be working.
-Best results are currently seen using init type 1 for multiple target learning and optimize set to 1.
