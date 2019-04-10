@@ -21,13 +21,11 @@ results = miTargets(data, parameters);
 
 Input: 
 
-data:
-
-    dataBags: bagged data
+    data.dataBags: bagged data
         * a positive bag should have at least one positive instance in it
         * a negative bag should consist of all negative instances
 
-    labels: labels for dataBags
+    data.labels: labels for dataBags
         * the labels should be a row vector with labels corresponding to the 
         * parameters.posLabel and parameters.negLabel where a posLabel corresponds
         * to a positive bag and a negLabel corresponds to a negative bag.
@@ -37,10 +35,8 @@ data:
 
 Output:
 
-results:
-    
-    init_t: learned target signature(s)
-    optObjVal: Value from objective value function of the target(s) returned
-    pBagsMax: the sample from each positive bag that has the highest confidence against the target(s)
-    b_mu: calculated background mean
-    sig_inv_half: result from SVD calculation           
+    results.init_t: learned target signature(s)
+    results.optObjVal: Value from objective value function of the target(s) returned
+    results.pBagsMax: the sample from each positive bag that has the highest confidence against the target(s)
+    results.b_mu: calculated background mean
+    results.sig_inv_half: result from SVD calculation           
