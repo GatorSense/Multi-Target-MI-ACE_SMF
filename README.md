@@ -1,4 +1,4 @@
-# Multi-target MI-ACE and MI-SMF
+# Multi-Target MI-ACE and MI-SMF
 
 Multi Target - Multiple Instance - Adaptive Cosine Estimator and Multiple Instance - Spectral Match Filter
 Matlab Implementation
