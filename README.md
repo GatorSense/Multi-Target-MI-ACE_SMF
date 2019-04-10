@@ -14,10 +14,15 @@ J. Bocinsky, A. Zare. (2019, April 09). GatorSense/MTMIACE: Version 1 (Version v
 
 ****************************************************************
 
+A hyperspectral simulation demo is provided in hyperspectralDataSimulation. To run the demo run:
+    
+    simulateHyperspectral.m
+    
+If you are using this algorithm on your own data please see the template code provided in exampleMain.
 
-The command to run:
+The command to run algorithm:
 
-results = miTargets(data, parameters);
+    results = miTargets(data, parameters);
 
 Input: 
 
