@@ -17,7 +17,7 @@ J. Bocinsky, A. Zare. (2019, April 09). GatorSense/MTMIACE: Version 1 (Version v
 
 The command to run:
 
-results{iter} = miTargets(data, parameters);
+results = miTargets(data, parameters);
 
 Input: 
 
@@ -33,19 +33,7 @@ data:
         * to a positive bag and a negLabel corresponds to a negative bag.
         * The index of the label should match the index of the bag in dataBags
 
-parameters:
-    
-    numTargets: how many targets will be learned
-    initType: how the target is initialized. four possible inputs: 1, 2, 3, or 4
-    optimize: (boolean) if target signatures will be optimized or not
-    maxIter: how many possible iterations for optimizing target signature ex) 100
-    methodFlag: (boolean) Use ACE (1) or SMF (0) as similarity measure    
-    globalBackgroundFlag: (boolean) estimate the background mean and inv cov from all data or just negative bags
-    posLabel: what denotes a positive bag's label. ex) 1
-    negLabel: what denotes a negative bag's label. ex) 0
-    abs: taking absolute value of confidences
-    softmaxFlag: (boolean) Not yet implemented, keep set to 0
-
+    parameters: see algorithm/setParameters.m for description
 
 Output:
 
