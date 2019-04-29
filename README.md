@@ -37,7 +37,7 @@ The algorithm runs using the following function:
         * to a positive bag and a negLabel corresponds to a negative bag.
         * The index of the label should match the index of the bag in dataBags
 
-    parameters: call setParameters.m function and see file to set parameters
+    parameters: call setParameters.m function to set parameters
     
 
 ## Parameters
