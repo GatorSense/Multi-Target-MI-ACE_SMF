@@ -68,7 +68,8 @@ The parameters is a MATLAB structure with the following fields:
 https://github.com/GatorSense/Multi-Target-MI-ACE_SMF
 
 └── root dir
-    ├── README.md   //this file
+    ├── LICENSE  //MIT license
+    ├── README.md  //this file
     └── algorithm  //algorithm functions
         ├── evalObjectiveFunction.m //evaluates the objective function given a candidate target signature
         ├── evalObjectiveFunctionLookup.m //evaluates the objective function for initialization using a precomputed similarity matrix of data
