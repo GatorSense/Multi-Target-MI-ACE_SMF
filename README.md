@@ -14,6 +14,12 @@ In this repository, we provide the papers and code for the Multi-Target MI-ACE a
 This code uses MATLAB Statistics and Machine Learning Toolbox,
 MATLAB Optimization Toolbox and MATLAB Parallel Computing Toolbox.
 
+## Cloning
+
+To recursively clone this repository using Git to include the hyperspectral demo submodule use the following command:
+
+     git clone --recursive https://github.com/GatorSense/Multi-Target-MI-ACE_SMF.git
+
 ## Demo
 
 Run `simulateHyperspectral.m` in MATLAB.
