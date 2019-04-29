@@ -51,14 +51,12 @@ The parameters is a MATLAB structure with the following fields:
 3. initType: (1) Search through all positive instances or (2) Search through K-Means cluster centers of positive instances
 4. optimize: Optimize targets or not
 5. maxIter: Max number of optimization iterations
-6. globalBackgroundFlag: (1) Use all the data (including positive bags) or (0) just the negative instances to compute background statistics
+6. globalBackgroundFlag: (1) Use all data or (0) just the negative instances to compute background statistics
 7. posLabel: Label used for positive bags
 8. negLabel: Label used for negative bags
 9. numClusters: Number of clusters if using initType (2)
 10. uniqueTargets: (1) Use uniqueness term or (0) not
 11. alpha: Uniqueness term weight in objective function
-
-*Parameters can be modified by users in [parameters] = setParameters() function.*
 
 ## Inventory
 
