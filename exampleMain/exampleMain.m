@@ -18,7 +18,7 @@ disp('Bagging data');
 Bag your specific data here:
 
 example-
-[data] = bagData(rawData);
+[data] = bagData(yourData);
 
 %}
 
