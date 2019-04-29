@@ -3,7 +3,7 @@
 
 _James Bocinsky and Alina Zare_
 
-If you use this code, cite it: Needs to be completed...
+If you use this code, cite it: To be completed...
 
 [[`BibTeX`](#Citing)]
 
