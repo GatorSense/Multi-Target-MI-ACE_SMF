@@ -131,96 +131,102 @@ end
 
 function [initTargets, initTargetLocation, originalPDataBagNumbers, initObjectiveValue] = init1(pDataBags, nDataBags, parameters)
 
-disp('Initializing Targets');
+    disp('Initializing Targets');
 
-pData = vertcat(pDataBags{:});
-initTargets = [];
+    pData = vertcat(pDataBags{:});
+    initTargets = [];
 
-%Compute pDataConfidences
-[pDataConfidences, pDataBagNumbers] = computePDataSimilarityMatrix(pDataBags);
-originalPDataBagNumbers = pDataBagNumbers; %Keep a copy for labeling plots
+    %Compute pDataConfidences
+    [pDataConfidences, pDataBagNumbers] = computePDataSimilarityMatrix(pDataBags);
+    originalPDataBagNumbers = pDataBagNumbers; %Keep a copy for labeling plots
 
-%Compute nDataConfidences
-[nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags);
+    %Compute nDataConfidences
+    [nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags);
 
-numPData = size(pData, 1);
+    numPData = size(pData, 1);
 
-%A boolean matrix to include the sample for a target concept consideration
-includeMatrix = ones(numPData, 1);
+    %A boolean matrix to include the sample for a target concept consideration
+    includeMatrix = ones(numPData, 1);
 
-initTargetLocation = zeros(2, parameters.numTargets);
-initObjectiveValue = zeros(1, parameters.numTargets);
+    initTargetLocation = zeros(2, parameters.numTargets);
+    initObjectiveValue = zeros(1, parameters.numTargets);
 
-%For all targets
-for target = 1:parameters.numTargets
-    
-    disp(['Initializing Target: ' num2str(target)]);
-    
-    objectiveValues = -100*ones(1, numPData);
-    averagePBag = 100*ones(numPData, 1);
-    averageNBag = 100*ones(numPData, 1);
-    
-    numTargetsLearned = target - 1;
-    
-    %After each target is calculated remove pData with that tag
-    samplePBagMaxConfs = 100*ones(numPData, size(pDataBags, 2));
-	%Compute objective function value for every pData sample
-    for sampleNum = 1:numPData
-        %Only consider the samples that don't look like targets we've already chosen
-        if(includeMatrix(sampleNum))
-            [objectiveValues(sampleNum), ~, samplePBagMaxConfs(sampleNum,:), averagePBag(sampleNum), averageNBag(sampleNum)] = evalObjectiveFunctionLookup(numTargetsLearned, initTargetLocation, sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters);
+    %For all targets
+    for target = 1:parameters.numTargets
+
+        disp(['Initializing Target: ' num2str(target)]);
+
+        objectiveValues = -100*ones(1, numPData);
+        averagePBag = 100*ones(numPData, 1);
+        averageNBag = 100*ones(numPData, 1);
+
+        numTargetsLearned = target - 1;
+
+        %After each target is calculated remove pData with that tag
+        samplePBagMaxConfs = 100*ones(numPData, size(pDataBags, 2));
+        %Compute objective function value for every pData sample
+        for sampleNum = 1:numPData
+            %Only consider the samples that don't look like targets we've already chosen
+            if(includeMatrix(sampleNum))
+                [objectiveValues(sampleNum), ~, samplePBagMaxConfs(sampleNum,:), averagePBag(sampleNum), averageNBag(sampleNum)] = evalObjectiveFunctionLookup(numTargetsLearned, initTargetLocation, sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters);
+            end
         end
+
+        %Take max objective value
+        [initObjectiveValue(1,target), initTargetLocation(1,target)] = max(objectiveValues(:));
+        %Store location and bag number for indexing in objective value function
+        initTargetLocation(2,target) = originalPDataBagNumbers(initTargetLocation(1,target));
+
+        %Extract sample at optTargetLocation
+        initTarget = pData(initTargetLocation(1,target), :);
+        initTarget = initTarget/norm(initTarget);
+
+        initTargets = vertcat(initTargets, initTarget);
+        numTargetsLearned = target;
+
+        removeSimilarThresh = 1;
+        %Remove similar data to target selected
+        [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, removeSimilarThresh);
+
     end
-    
-    %Take max objective value
-    [initObjectiveValue(1,target), initTargetLocation(1,target)] = max(objectiveValues(:));
-    %Store location and bag number for indexing in objective value function
-    initTargetLocation(2,target) = originalPDataBagNumbers(initTargetLocation(1,target));
-    
-    %Extract sample at optTargetLocation
-    initTarget = pData(initTargetLocation(1,target), :);
-    initTarget = initTarget/norm(initTarget);
-    
-    initTargets = vertcat(initTargets, initTarget);
-    numTargetsLearned = target;
-    
-    %Remove similar data to target selected
-    [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, parameters.removeSimilarThresh);
- 
-end
 
 end
 
 %Initialize using K Means and picking cluster centers that maximize objective function
 function [initTargets, objectiveValues, C] = init2(pDataBags, nDataBags, parameters)
 
-pData = vertcat(pDataBags{:});
+    pData = vertcat(pDataBags{:});
 
-disp('Clustering Data');
+    disp('Clustering Data');
 
-%Get cluster centers (C)
-[~, C] = kmeans(pData, min(size(pData, 1), parameters.numClusters), 'MaxIter', parameters.maxIter);
-
-initTargets = zeros(parameters.numTargets, size(C,2));
-numTargetsLearned = 0;
-for target = 1:parameters.numTargets
-    disp(['Initializing Target: ' num2str(target)]);
+    %Get cluster centers (C)
+    [~, C] = kmeans(pData, min(size(pData, 1), parameters.numClusters), 'MaxIter', parameters.maxIter);
     
-    objectiveValues = zeros(1, size(C,1));
-    for j = 1:size(C, 1) %if large amount of data, can make this parfor loop
-        [objectiveValues(j)] = evalObjectiveFunction(pDataBags, nDataBags, C(j, :), initTargets, numTargetsLearned, parameters);
-    end
+    initTargets = zeros(parameters.numTargets, size(C,2));
+    numTargetsLearned = 0;
+    for target = 1:parameters.numTargets
+        disp(['Initializing Target: ' num2str(target)]);
+
+        objectiveValues = zeros(1, size(C,1));
+        pBagMaxConf = zeros(size(C,1), size(pDataBags, 2));
+        for j = 1:size(C, 1) %if large amount of data, can make this parfor loop
+            [objectiveValues(j), ~, pBagMaxConf(j,:)] = evalObjectiveFunction(pDataBags, nDataBags, C(j, :), initTargets, numTargetsLearned, parameters);
+        end
         
-    %Get location of max objective value
-    [~, opt_loc] = max(objectiveValues);
+        %Get location of max objective value
+        [~, opt_loc] = max(objectiveValues);
+
+        initTargets(target,:) = C(opt_loc, :);
+
+        C(opt_loc,:) = 0;
+
+        numTargetsLearned = numTargetsLearned + 1;
+    end
     
-    %Normalize target sig
-    initTargets(target,:) = C(opt_loc, :) / norm(C(opt_loc, :));
-    
-    C(opt_loc,:) = [];
-    
-    numTargetsLearned = numTargetsLearned + 1;
-end
+    %Normalize targets
+    for target = 1:parameters.numTargets
+        initTargets(target,:) = initTargets(target, :) / norm(initTargets(target, :));
+    end
 
 end
 
