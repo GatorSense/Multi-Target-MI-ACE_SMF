@@ -97,9 +97,9 @@ This product is Copyright (c) 2019 J. Bocinsky and A. Zare. All rights reserved.
 If you use the Multi-target MI-ACE or Multi-target MI-SMF algorithm, please cite the following reference using the following BibTeX entries. To be completed...
 ```
 @article{Bo2019multi,
-  title={Enter Here},
+  title={To be completed},
   author={Bocinsky, James},
-  journal={arXiv preprint arXiv:Enter Here},
+  journal={arXiv preprint arXiv:To be completed},
   year={2019}
 }
 ```       
