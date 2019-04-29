@@ -20,7 +20,7 @@ Run `simulateHyperspectral.m` in MATLAB.
 
 ## Main Functions
 
-The algorithm runs using the following function:
+Run the algorithm using the following function:
 
 ```results = miTargets(data, parameters);```
 
