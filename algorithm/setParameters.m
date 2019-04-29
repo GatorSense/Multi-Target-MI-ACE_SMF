@@ -13,11 +13,6 @@ parameters.numClusters = 20;                %Num clusters used for initType 2
 
 %Uniqueness term settings (affects initialization and optimization)
 parameters.uniqueTargets = 1;               %Use target uniqueness term or not
-parameters.alpha = 1;                       %Weight the uniqueness term gets in objective function
-
-%Initialization remove similar instances thesh. 
-%Used in initType 1. If set to 1, only the initialized instance is excluded from being a future target signature. 
-%Otherwise all instances that have a similarity more than this threshold to an initialized target are excluded from being a future target signature. Typical values around .9-.95 if used.
-parameters.removeSimilarThresh = 1;         
+parameters.alpha = 1;                       %Weight the uniqueness term gets in objective function     
 
 end
