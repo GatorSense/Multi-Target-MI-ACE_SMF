@@ -143,6 +143,7 @@ for tar = 1:parameters.numTargets
     initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
 end
 
+%Return results
 results.optTargets = optTargets;
 results.optObjVal = optObjVal;
 results.b_mu = b_mu;

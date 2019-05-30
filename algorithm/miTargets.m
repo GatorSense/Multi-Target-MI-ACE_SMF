@@ -31,11 +31,14 @@ parameters:
 Output:
 *************************************************************
 results:
-    init_t: learned target signature(s)
-    optObjVal: Value from objective value function of the target(s) returned
-    pBagsMax: the sample from each positive bag that has the highest confidence against the target(s)
+    optTargets: optimized learned target signatures (only returned if optimization done)
+    optObjVal: value from objective function of the target(s) returned after optimization (only returned if optimization done)
     b_mu: calculated background mean
+    b_cov: calculated background covariance from SVD
     sig_inv_half: result from SVD calculation
+    initTargets: initialized target signatures (will always be the number set in setParameters.m)
+    methodFlag: method used. ACE (1) vs SMF (0)
+    numTargets: number of learned targets.
 
 %}
 
@@ -107,7 +110,6 @@ end
 
 if(parameters.optimize)
     results = optimizeTargets(data, initTargets, parameters);
-    results.methodFlag = parameters.methodFlag;  
     
 else
     
@@ -123,7 +125,7 @@ else
     results.initTargets = initTargets;
     results.methodFlag = parameters.methodFlag;
     results.numTargets = size(initTargets,1);
-    results.optTargets = initTargets;
+    results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
     
 end
 
