@@ -1,4 +1,4 @@
-function [ objectiveValue, pBagMaxConfSig, pBagMaxConf] = evalObjectiveFunction(pDataBags, nDataBags, targetSignature, targets, numTargetsLearned, parameters)
+function [objectiveValue, pBagMaxConfSig, pBagMaxConf, pBagMaxConfIndex] = evalObjectiveFunction(pDataBags, nDataBags, targetSignature, targets, numTargetsLearned, parameters)
 %N_EVALOBJECTIVEFUNCTION Summary of this function goes here
 %   Detailed explanation goes here
     %Setup
@@ -6,6 +6,7 @@ function [ objectiveValue, pBagMaxConfSig, pBagMaxConf] = evalObjectiveFunction(
     pBagMaxConfThisTarget = zeros(1, numPBags);
     pBagMaxConfAll = zeros(1, numPBags);
     pBagMaxConfSig = cell(1, numPBags);
+    pBagMaxConfIndex = zeros(1, numPBags);
 
     %Get the max confidence of the positive bag representatives for all targets
     for bag = 1:numPBags
@@ -23,7 +24,7 @@ function [ objectiveValue, pBagMaxConfSig, pBagMaxConf] = evalObjectiveFunction(
         pConf = sum(pDataMat.*targetsMat, 2);
         
         %Get max confidence for this bag
-        [pBagMaxConfAll(bag), pBagMaxConfIndex] = max(pConf);
+        [pBagMaxConfAll(bag), ~] = max(pConf);
     end
     
     
@@ -37,10 +38,10 @@ function [ objectiveValue, pBagMaxConfSig, pBagMaxConf] = evalObjectiveFunction(
         pConf = sum(pData.*targetSignature, 2);
         
         %Get max confidence for this bag
-        [pBagMaxConfThisTarget(bag), pBagMaxConfIndex] = max(pConf);
+        [pBagMaxConfThisTarget(bag), pBagMaxConfIndex(bag)] = max(pConf);
         
         %Get actual signature of highest confidence in this bag
-        pBagMaxConfSig{bag} = pData(pBagMaxConfIndex, :)';
+        pBagMaxConfSig{bag} = pData(pBagMaxConfIndex(bag), :)';
     end
     
     %Take max across this target and all targets

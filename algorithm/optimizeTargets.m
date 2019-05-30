@@ -51,6 +51,7 @@ continueFlag = 1;
 optTargets = initTargets;
 doneOptimizingFlags = zeros(1,numLearnedTargets);
 targetIterationDoneCount = zeros(1,numLearnedTargets);
+objTracker(parameters.maxIter) = struct();
 
 %% Optimize target signatures
 while(continueFlag && iter < parameters.maxIter)
@@ -61,14 +62,15 @@ while(continueFlag && iter < parameters.maxIter)
     optObjVal = zeros(numLearnedTargets,1);
     xStarsAll = cell(numLearnedTargets, nPBags);
     xStarsSimAll = zeros(numLearnedTargets, nPBags);
+    pBagMaxIndex = zeros(numLearnedTargets, nPBags);
     
     %Compute xStars and xStarsSimilarity to know which signatures to include in optimization
     for target = 1:numLearnedTargets
-        [optObjVal(target), xStarsAll(target,:), xStarsSimAll(target,:)] = evalObjectiveFunction(pDataBags, nDataBags, optTargets(target,:), optTargets, numLearnedTargets, parameters);
+        [optObjVal(target), xStarsAll(target,:), xStarsSimAll(target,:), pBagMaxIndex(target,:)] = evalObjectiveFunction(pDataBags, nDataBags, optTargets(target,:), optTargets, numLearnedTargets, parameters);
     end
     [maxXStarsSim, maxXStarsSimInd] = max(xStarsSimAll,[],1);
     
-    %Track these values across iterations
+    %Track values across iterations
     if(~isnan(any(optObjVal)) && ~any(isnan(any(optTargets))))
         %Store the values at this iteration
         objTracker(iter).val = optObjVal;
@@ -78,11 +80,15 @@ while(continueFlag && iter < parameters.maxIter)
         objTracker(iter).val = objTracker(iter-1).val;
         objTracker(iter).target = objTracker(iter-1).target;
     end
+    objTracker(iter).pBagMaxIndex = pBagMaxIndex;
+    objTracker(iter).numLearnedTargets = numLearnedTargets;
     
     %Update each target signature
     for target = 1:numLearnedTargets
-                
+        
+        %Reinitialize pMean
         pMean = zeros(numLearnedTargets, size(optTargets,2));
+        
         %If this target is not done optimizing, optimize it
         if(doneOptimizingFlags(target) == 0)
                             
@@ -120,18 +126,17 @@ while(continueFlag && iter < parameters.maxIter)
         end
     end
 
-    %UPDATE ME: Needs to be updated to either use a change threshold stopping condition or be based on the selected instances in the update.
-    %Cannot not use actual signatures across iterations because the target signatures may affect each other due to uniqueness term.
-    %If the target signatures have not updated, it is done optimizing.
+    %If every target signature chooses the same positive bag representatives, then it is done optimizing.
     if(iter ~= 1)
-        if(objTracker(iter-1).val == optObjVal)
-            if(~sum(abs(objTracker(iter-1).target - optTargets)))
+        if(isequal(size(objTracker(iter-1).pBagMaxIndex), size(pBagMaxIndex)))
+            if(~sum(objTracker(iter-1).pBagMaxIndex - pBagMaxIndex))
                 continueFlag = 0;
                 disp(['Stopping at iter: ', num2str(iter-1)]);
             end
         end
     end
 end
+
 
 %% Undo whitening
 optTargets = (optTargets*D^(1/2)*V');
