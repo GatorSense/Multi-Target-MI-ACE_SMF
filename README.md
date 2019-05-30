@@ -61,8 +61,7 @@ The parameters is a MATLAB structure with the following fields:
 7. posLabel: Label used for positive bags
 8. negLabel: Label used for negative bags
 9. numClusters: Number of clusters if using initType (2)
-10. uniqueTargets: (1) Use uniqueness term or (0) not
-11. alpha: Uniqueness term weight in objective function
+10. alpha: Uniqueness term weight in objective function, set to 0 if you do not want to use the term
 
 ## Inventory
 
