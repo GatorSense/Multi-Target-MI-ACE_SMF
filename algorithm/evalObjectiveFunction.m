@@ -65,7 +65,7 @@ function [ objectiveValue, pBagMaxConfSig, pBagMaxConf] = evalObjectiveFunction(
     averageNBag = mean(nBagMeanConf(:));
     
     %Calculate uniqueness term
-    if(parameters.uniqueTargets)
+    if(parameters.alpha ~= 0)
         if(numTargetsLearned ~= 0)
             uniqueness = calculateUniquenessTerm(targetSignature, targets, parameters);
         else

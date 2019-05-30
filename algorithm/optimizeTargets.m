@@ -99,7 +99,7 @@ while(continueFlag && iter < parameters.maxIter)
             end
 
             %Update the target signature
-            if(parameters.uniqueTargets)             
+            if(parameters.alpha ~= 0)             
                 tMean = calcTargetMean(optTargets, target, parameters);
                 t = pMean(target,:) - nMean - tMean;
             else

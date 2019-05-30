@@ -85,7 +85,7 @@ averagePBag = mean(pBagMaxConf(:));
 averageNBag = mean(nBagMeanConf(:));
 
 %Calculate uniqueness term
-if(parameters.uniqueTargets)
+if(parameters.alpha ~= 0)
     if(numTargetsLearned ~= 0)
         targets = targetIndexes(:, 1:numTargetsLearned);
         uniqueness = calculateUniquenessTerm(pDataConfidences, sampleNum, targets, parameters);
