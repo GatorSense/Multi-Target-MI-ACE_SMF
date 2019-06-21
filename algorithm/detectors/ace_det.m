@@ -1,5 +1,21 @@
-function [ace_data,mu,siginv] = ace_det(hsi_data,tgt_sig,mu,siginv)
+function [ace_data,ace_max,ace_idx,mu,siginv] = ace_det(hsi_data,tgt_sig,mu,siginv)
+% Computes the Adaptive Cosine Estimator (ACE) detection statistic for each 
+% sample in the data matrix given a set of targets.
+% INPUTS:
+% 1) hsi_data: input data for SMF detector, [n_dim, n_samples] 
+% 2) tgt_sig: Target signature matrix, returned from miTargets.m, [n_dim, n_targets]
+% 3) mu: background mean, returned from miTargets.m, [n_dim, 1]
+% 4) siginv: background covariance, [n_dim, n_dim]
+% OUTPUTS:
+% 1) ace_data: ace confidence values for each sample [n_targets, n_samp] 
+% 2) ace_max: max ace confidence value for each sample [1 x n_samp]
+% 3) ace_idx: target signature index corresponding to
+%             max ace confidence value for each sample. [1 x n_samp]
+% 4) mu: background mean, returned from miTargets.m, [n_dim, 1]
+% 5) siginv: background covariance, [n_dim, n_dim]
+% -----------------------------------------------------------------------
 
+% Calculate mean and covariance from input data if it wasn't provided
 if isempty(mu)
     mu = mean(hsi_data,2);
 end
@@ -7,18 +23,27 @@ if isempty(siginv)
     siginv = pinv(cov(hsi_data'));
 end
 
-%For target signatures pulled from data, use line 11 instead of 12
-% s = tgt_sig - mu;
-s = tgt_sig;
+% Subtract background mean from input data
 z = bsxfun(@minus,hsi_data,mu);
 
-st_siginv = s'*siginv;
-st_siginv_s = s'*siginv*s;
+% Loop through targets 
+ace_data = zeros(size(tgt_sig,2),size(hsi_data,2));
+for i = 1:size(tgt_sig,2)
+    
+    %For target signatures pulled from data, use line 32 instead of 33
+    % s = tgt_sig(:,i) - mu;
+    s = tgt_sig(:,i);
+    
+    st_siginv = s'*siginv;
+    st_siginv_s = s'*siginv*s;
+    
+    A = sum(st_siginv*z,1);
+    B = sqrt(st_siginv_s);
+    C = sqrt(sum(z.*(siginv*z),1));
+    
+    ace_data(i,:) = A./(B.*C);
+end
 
-A = sum(st_siginv*z,1);
-B = sqrt(st_siginv_s);
-C = sqrt(sum(z.*(siginv*z),1));
-
-ace_data = A./(B.*C);
-
+% Fuse ACE results from each dictionary element into a single confidence map.
+[ace_max, ace_idx] = max(ace_data, [], 1);
 end
