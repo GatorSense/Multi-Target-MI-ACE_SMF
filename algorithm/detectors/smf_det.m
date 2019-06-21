@@ -5,7 +5,7 @@ function [smf_data,smf_max,smf_idx,mu,siginv] = smf_det(hsi_data,tgt_sig,mu,sigi
 % 1) hsi_data: input data for SMF detector, [n_dim, n_samples] 
 % 2) tgt_sig: Target signature matrix, returned from miTargets.m, [n_dim, n_targets]
 % 3) mu: background mean, returned from miTargets.m, [n_dim, 1]
-% 4) siginv: background covariance, [n_dim, n_dim]
+% 4) siginv: inverse background covariance, [n_dim, n_dim]
 % 5) meanFlag: flag that indicates whether the background mean should be
 %              subtracted from target signatures. Signatures from MT MI ACE
 %              already have background mean substracted. 
