@@ -1,4 +1,4 @@
-function [ace_data,ace_max,ace_idx,mu,siginv] = ace_det(hsi_data,tgt_sig,mu,siginv)
+function [ace_data,ace_max,ace_idx,mu,siginv] = ace_det(hsi_data,tgt_sig,mu,siginv,meanFlag)
 % Computes the Adaptive Cosine Estimator (ACE) detection statistic for each 
 % sample in the data matrix given a set of targets.
 % INPUTS:
@@ -6,6 +6,11 @@ function [ace_data,ace_max,ace_idx,mu,siginv] = ace_det(hsi_data,tgt_sig,mu,sigi
 % 2) tgt_sig: Target signature matrix, returned from miTargets.m, [n_dim, n_targets]
 % 3) mu: background mean, returned from miTargets.m, [n_dim, 1]
 % 4) siginv: background covariance, [n_dim, n_dim]
+% 5) meanFlag: flag that indicates whether the background mean should be
+%              subtracted from target signatures. Signatures from MT MI ACE
+%              already have background mean subtracted. 
+%              0: do NOT remove background mean from target signatures
+%              1: do remove background mean from target signatures
 % OUTPUTS:
 % 1) ace_data: ace confidence values for each sample [n_targets, n_samp] 
 % 2) ace_max: max ace confidence value for each sample [1 x n_samp]
@@ -30,9 +35,11 @@ z = bsxfun(@minus,hsi_data,mu);
 ace_data = zeros(size(tgt_sig,2),size(hsi_data,2));
 for i = 1:size(tgt_sig,2)
     
-    %For target signatures pulled from data, use line 32 instead of 33
-    % s = tgt_sig(:,i) - mu;
-    s = tgt_sig(:,i);
+    if meanFlag == 1
+        s = tgt_sig(:,i) - mu; %For target signatures pulled from data
+    else
+        s = tgt_sig(:,i); %For target signatures with mean removed
+    end
     
     st_siginv = s'*siginv;
     st_siginv_s = s'*siginv*s;
