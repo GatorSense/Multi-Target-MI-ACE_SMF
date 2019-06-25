@@ -10,9 +10,9 @@ nPBags = sum(data.labels == parameters.posLabel);
 
 %Estimate background mean and inv cov
 if(parameters.globalBackgroundFlag)
-    data = vertcat(data.dataBags{:});
-    b_mu = mean(data);
-    b_cov = cov(data)+eps*eye(size(data, 2));
+    dataBG = vertcat(data.dataBags{:});
+    b_mu = mean(dataBG);
+    b_cov = cov(dataBG)+eps*eye(size(dataBG, 2));
 else
     nData = vertcat(data.dataBags{data.labels == parameters.negLabel});
     b_mu = mean(nData);
