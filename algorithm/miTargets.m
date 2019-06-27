@@ -54,33 +54,8 @@ if(nPBags < parameters.numTargets)
     error(msg);
 end
 
-%Estimate background mean and inv cov
-if(parameters.globalBackgroundFlag)
-    dataBG = vertcat(data.dataBags{:});
-    b_mu = mean(dataBG);
-    b_cov = cov(dataBG)+eps*eye(size(dataBG, 2));
-else
-    nData = vertcat(data.dataBags{data.labels == parameters.negLabel});
-    b_mu = mean(nData);
-    b_cov = cov(nData)+eps*eye(size(nData, 2));
-%     b_cov = cov(nData);
-
-end
-
-%Whiten Data
-[U, D, V] = svd(b_cov);
-sig_inv_half = D^(-1/2)*U';
-dataBagsWhitened = {};
-for i = 1:nBags
-    m_minus = data.dataBags{i} - repmat(b_mu, [size(data.dataBags{i}, 1), 1]);
-    m_scale = m_minus*sig_inv_half';
-    if(parameters.methodFlag)
-        denom = sqrt(repmat(sum(m_scale.*m_scale, 2), [1, nDim]));
-        dataBagsWhitened{i} = m_scale./denom;
-    else
-        dataBagsWhitened{i} = m_scale;
-    end
-end
+% Whiten Data
+[b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters);
 pDataBags = dataBagsWhitened(data.labels ==  parameters.posLabel);
 nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
 
