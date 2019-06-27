@@ -39,18 +39,21 @@ end
 %Whiten Data
 [U, D, V] = svd(b_cov);
 sig_inv_half = D^(-1/2)*U';
-dataBagsWhitened = {};
+dataWhitened = {};
+nBags = length(data.dataBags);
+nDim = size(data.dataBags{1}, 2);
 for i = 1:nBags
     m_minus = data.dataBags{i} - repmat(b_mu, [size(data.dataBags{i}, 1), 1]);
     m_scale = m_minus*sig_inv_half';
     if(parameters.methodFlag)
         denom = sqrt(repmat(sum(m_scale.*m_scale, 2), [1, nDim]));
-        dataBagsWhitened{i} = m_scale./denom;
+        dataWhitened{i} = m_scale./denom;
     else
-        dataBagsWhitened{i} = m_scale;
+        dataWhitened{i} = m_scale;
     end
 end
 
+dataBagsWhitened.dataBags = dataWhitened;
 dataBagsWhitened.labels = data.labels;
 dataInfo.mu = b_mu;
 dataInfo.cov = b_cov;
