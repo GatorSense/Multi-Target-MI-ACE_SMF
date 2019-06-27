@@ -11,12 +11,13 @@ function [b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters)
 %                globalBackgroundFlag: Determines how the background mean and cov is calcualted 
 %                  0: mean and cov calculated from all data 
 %                  1: mean and cov calculated from only negative bags
-
+%                negLabel: Labels for negative bags
 % OUTPUTS:
 % 1) b_mu: background mean [1, n_dim]
 % 2) b_cov: background inverse covariance [n_dim, n_dim]
 % 3) dataBagsWhitened: input data that is whitened, same format and shape
 %                      as input data
+% -----------------------------------------------------------------------
 
 %Estimate background mean and inv cov
 if(parameters.globalBackgroundFlag)
