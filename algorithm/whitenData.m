@@ -1,4 +1,4 @@
-function [b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters)
+function [dataBagsWhitened, dataInfo] = whitenData(data, parameters)
 % Function that 'whitens' data for ACE and SMF detectors. Removes
 % background mean and scales data.
 % INPUTS:
@@ -13,10 +13,11 @@ function [b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters)
 %                  1: mean and cov calculated from only negative bags
 %                negLabel: Labels for negative bags
 % OUTPUTS:
-% 1) b_mu: background mean [1, n_dim]
-% 2) b_cov: background inverse covariance [n_dim, n_dim]
-% 3) dataBagsWhitened: input data that is whitened, same format and shape
+% 1) dataBagsWhitened: input data that is whitened, same format and shape
 %                      as input data
+% 2) dataInfo: a structure that contains information about the background
+%              1) bg_mu: background mean [1, n_dim]
+%              2) bg_invcov: inverse background covariance, [n_dim, n_dim]
 % -----------------------------------------------------------------------
 
 %Estimate background mean and inv cov
@@ -47,5 +48,7 @@ for i = 1:nBags
 end
 
 dataBagsWhitened.labels = data.labels;
+dataInfo.bg_mu = b_mu;
+dataInfo.bg_invcov = sig_inv_half;
 end
 
