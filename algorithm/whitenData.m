@@ -16,8 +16,11 @@ function [dataBagsWhitened, dataInfo] = whitenData(data, parameters)
 % 1) dataBagsWhitened: input data that is whitened, same format and shape
 %                      as input data
 % 2) dataInfo: a structure that contains information about the background
-%              1) bg_mu: background mean [1, n_dim]
-%              2) bg_invcov: inverse background covariance, [n_dim, n_dim]
+%              1) mu: background mean [1, n_dim]
+%              2) invcov: inverse background covariance, [n_dim, n_dim]
+%              3) D: a singular value decomposition of matrix A, such that A = U*S*V'.
+%              4) V: a singular value decomposition of matrix A, such that A = U*S*V'.
+%              5) U: a singular value decomposition of matrix A, such that A = U*S*V'.
 % -----------------------------------------------------------------------
 
 %Estimate background mean and inv cov
@@ -33,7 +36,7 @@ else
 end
 
 %Whiten Data
-[U, D, ~] = svd(b_cov);
+[U, D, V] = svd(b_cov);
 sig_inv_half = D^(-1/2)*U';
 dataBagsWhitened = {};
 for i = 1:nBags
@@ -48,7 +51,10 @@ for i = 1:nBags
 end
 
 dataBagsWhitened.labels = data.labels;
-dataInfo.bg_mu = b_mu;
-dataInfo.bg_invcov = sig_inv_half;
+dataInfo.mu = b_mu;
+dataInfo.invcov = sig_inv_half;
+dataInfo.D = D;
+dataInfo.V = V;
+dataInfo.U = U;
 end
 
