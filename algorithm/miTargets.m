@@ -55,7 +55,7 @@ if(nPBags < parameters.numTargets)
 end
 
 % Whiten Data
-[b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters);
+[dataBagsWhitened, dataInfo] = whitenData(data, parameters);
 pDataBags = dataBagsWhitened(data.labels ==  parameters.posLabel);
 nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
 
@@ -85,24 +85,51 @@ end
 
 if(parameters.optimize)
     results = optimizeTargets(data, initTargets, parameters);
-    
 else
-    
-    %Undo whitening
-    initTargets = (initTargets*D^(1/2)*V');
-    for tar = 1:parameters.numTargets
-        initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
-    end
-    
-    results.b_mu = b_mu;
-    results.b_cov = b_cov;
-    results.sig_inv_half = sig_inv_half;
-    results.initTargets = initTargets;
-    results.methodFlag = parameters.methodFlag;
-    results.numTargets = size(initTargets,1);
-    results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
-    
+    results = nonOptTargets(initTargets, parameters, dataInfo);
 end
+
+end
+
+function [results] = nonOptTargets(initTargets, parameters, dataInfo)
+% Function that executes if non-optimization parameter is set. This does
+% not perform optimization on initial targets using MT MI objective
+% function.
+% INPUTS:
+% 1) initTargets: matrix of initialized target signatures [n_targets, n_dim] 
+%                 (will always be the number set in setParameters.m)
+% 2) parameters: a structure containing parameter variables. Parameters
+%                used in this function: numTargets, methodFlag
+% 3) dataInfo: background calculations (mu, inverse covariance) 
+% OUTPUTS:
+% 1) results: a structure containing the following variables:
+%             1) b_mu: background mean [1, n_dim]
+%             2) b_cov: background covariance [n_dim, n_dim]
+%             3) sig_inv_half: inverse background covariance, [n_dim, n_dim]
+%             4) initTargets: the initial target signatures [n_targets, n_dim]
+%             5) methodFlag: value designating which method was used for similarity measure
+%             6) numTargets: the number of target signatures found
+%             7) optTargets: a string designating optimization was not performed
+% ------------------------------------------------------------------------
+
+% Set up Variables
+D = dataInfo.D;
+V = dataInfo.V;
+
+%Undo whitening
+initTargets = (initTargets*D^(1/2)*V');
+for tar = 1:parameters.numTargets
+	initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
+end
+
+% Save Variables
+results.b_mu = dataInfo.mu;
+results.b_cov = dataInfo.cov;
+results.sig_inv_half = dataInfo.invcov;
+results.initTargets = initTargets;
+results.methodFlag = parameters.methodFlag;
+results.numTargets = size(initTargets,1);
+results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
 
 end
 
