@@ -42,11 +42,8 @@ results:
 
 %}
 
-nBags = length(data.dataBags);
-nDim = size(data.dataBags{1}, 2);
-nPBags = sum(data.labels == parameters.posLabel);
-
 %Ensure more positive bags then desired number of targets to learn
+nPBags = sum(data.labels == parameters.posLabel);
 if(nPBags < parameters.numTargets)
     msg = ['You must have more positive bags than the number of targets set in the parameters' newline ...
         blanks(5) 'Number of positive bags: ' num2str(nPBags) newline ...
@@ -56,8 +53,8 @@ end
 
 % Whiten Data
 [dataBagsWhitened, dataInfo] = whitenData(data, parameters);
-pDataBags = dataBagsWhitened(data.labels ==  parameters.posLabel);
-nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
+pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
+nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
 
 
 if(isfield(data, 'info'))
