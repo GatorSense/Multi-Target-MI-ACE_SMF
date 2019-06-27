@@ -17,6 +17,7 @@ function [dataBagsWhitened, dataInfo] = whitenData(data, parameters)
 %                      as input data
 % 2) dataInfo: a structure that contains information about the background
 %              1) mu: background mean [1, n_dim]
+%              2) cov: background covariance [n_dim, n_dim]
 %              2) invcov: inverse background covariance, [n_dim, n_dim]
 %              3) D: a singular value decomposition of matrix A, such that A = U*S*V'.
 %              4) V: a singular value decomposition of matrix A, such that A = U*S*V'.
@@ -52,6 +53,7 @@ end
 
 dataBagsWhitened.labels = data.labels;
 dataInfo.mu = b_mu;
+dataInfo.cov = b_cov;
 dataInfo.invcov = sig_inv_half;
 dataInfo.D = D;
 dataInfo.V = V;
