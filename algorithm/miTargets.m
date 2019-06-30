@@ -42,11 +42,8 @@ results:
 
 %}
 
-nBags = length(data.dataBags);
-nDim = size(data.dataBags{1}, 2);
-nPBags = sum(data.labels == parameters.posLabel);
-
 %Ensure more positive bags then desired number of targets to learn
+nPBags = sum(data.labels == parameters.posLabel);
 if(nPBags < parameters.numTargets)
     msg = ['You must have more positive bags than the number of targets set in the parameters' newline ...
         blanks(5) 'Number of positive bags: ' num2str(nPBags) newline ...
@@ -54,35 +51,10 @@ if(nPBags < parameters.numTargets)
     error(msg);
 end
 
-%Estimate background mean and inv cov
-if(parameters.globalBackgroundFlag)
-    data = vertcat(data.dataBags{:});
-    b_mu = mean(data);
-    b_cov = cov(data)+eps*eye(size(data, 2));
-else
-    nData = vertcat(data.dataBags{data.labels == parameters.negLabel});
-    b_mu = mean(nData);
-    b_cov = cov(nData)+eps*eye(size(nData, 2));
-%     b_cov = cov(nData);
-
-end
-
-%Whiten Data
-[U, D, V] = svd(b_cov);
-sig_inv_half = D^(-1/2)*U';
-dataBagsWhitened = {};
-for i = 1:nBags
-    m_minus = data.dataBags{i} - repmat(b_mu, [size(data.dataBags{i}, 1), 1]);
-    m_scale = m_minus*sig_inv_half';
-    if(parameters.methodFlag)
-        denom = sqrt(repmat(sum(m_scale.*m_scale, 2), [1, nDim]));
-        dataBagsWhitened{i} = m_scale./denom;
-    else
-        dataBagsWhitened{i} = m_scale;
-    end
-end
-pDataBags = dataBagsWhitened(data.labels ==  parameters.posLabel);
-nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
+% Whiten Data
+[dataBagsWhitened, dataInfo] = whitenData(data, parameters);
+pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
+nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
 
 
 if(isfield(data, 'info'))
@@ -110,24 +82,51 @@ end
 
 if(parameters.optimize)
     results = optimizeTargets(data, initTargets, parameters);
-    
 else
-    
-    %Undo whitening
-    initTargets = (initTargets*D^(1/2)*V');
-    for tar = 1:parameters.numTargets
-        initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
-    end
-    
-    results.b_mu = b_mu;
-    results.b_cov = b_cov;
-    results.sig_inv_half = sig_inv_half;
-    results.initTargets = initTargets;
-    results.methodFlag = parameters.methodFlag;
-    results.numTargets = size(initTargets,1);
-    results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
-    
+    results = nonOptTargets(initTargets, parameters, dataInfo);
 end
+
+end
+
+function [results] = nonOptTargets(initTargets, parameters, dataInfo)
+% Function that executes if non-optimization parameter is set. This does
+% not perform optimization on initial targets using MT MI objective
+% function.
+% INPUTS:
+% 1) initTargets: matrix of initialized target signatures [n_targets, n_dim] 
+%                 (will always be the number set in setParameters.m)
+% 2) parameters: a structure containing parameter variables. Parameters
+%                used in this function: numTargets, methodFlag
+% 3) dataInfo: background calculations (mu, inverse covariance) 
+% OUTPUTS:
+% 1) results: a structure containing the following variables:
+%             1) b_mu: background mean [1, n_dim]
+%             2) b_cov: background covariance [n_dim, n_dim]
+%             3) sig_inv_half: inverse background covariance, [n_dim, n_dim]
+%             4) initTargets: the initial target signatures [n_targets, n_dim]
+%             5) methodFlag: value designating which method was used for similarity measure
+%             6) numTargets: the number of target signatures found
+%             7) optTargets: a string designating optimization was not performed
+% ------------------------------------------------------------------------
+
+% Set up Variables
+D = dataInfo.D;
+V = dataInfo.V;
+
+%Undo whitening
+initTargets = (initTargets*D^(1/2)*V');
+for tar = 1:parameters.numTargets
+	initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
+end
+
+% Save Variables
+results.b_mu = dataInfo.mu;
+results.b_cov = dataInfo.cov;
+results.sig_inv_half = dataInfo.invcov;
+results.initTargets = initTargets;
+results.methodFlag = parameters.methodFlag;
+results.numTargets = size(initTargets,1);
+results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
 
 end
 
