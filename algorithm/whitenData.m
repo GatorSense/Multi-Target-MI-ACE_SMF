@@ -19,9 +19,9 @@ function [dataBagsWhitened, dataInfo] = whitenData(data, parameters)
 %              1) mu: background mean [1, n_dim]
 %              2) cov: background covariance [n_dim, n_dim]
 %              2) invcov: inverse background covariance, [n_dim, n_dim]
-%              3) D: a singular value decomposition of matrix A, such that A = U*S*V'.
-%              4) V: a singular value decomposition of matrix A, such that A = U*S*V'.
-%              5) U: a singular value decomposition of matrix A, such that A = U*S*V'.
+%              3) D: a singular value decomposition of matrix A, such that A = U*D*V'.
+%              4) V: a singular value decomposition of matrix A, such that A = U*D*V'.
+%              5) U: a singular value decomposition of matrix A, such that A = U*D*V'.
 % -----------------------------------------------------------------------
 
 %Estimate background mean and inv cov
