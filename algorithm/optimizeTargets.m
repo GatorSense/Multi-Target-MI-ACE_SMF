@@ -12,6 +12,8 @@ nPBags = sum(data.labels == parameters.posLabel);
 [dataBagsWhitened, dataInfo] = whitenData(data, parameters);
 pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
 nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
+D = dataInfo.D;
+V = dataInfo.V;
 
 %Precompute term 2 in update equation
 nMean = zeros(length(nDataBags), nDim);
@@ -128,9 +130,9 @@ end
 %Return results
 results.optTargets = optTargets;
 results.optObjVal = optObjVal;
-results.b_mu = b_mu;
-results.b_cov = b_cov;
-results.sig_inv_half = sig_inv_half;
+results.b_mu = dataInfo.mu;
+results.b_cov = dataInfo.cov;
+results.sig_inv_half = dataInfo.invcov;
 results.initTargets = initTargets;
 results.methodFlag = parameters.methodFlag;
 results.numTargets = numLearnedTargets;
