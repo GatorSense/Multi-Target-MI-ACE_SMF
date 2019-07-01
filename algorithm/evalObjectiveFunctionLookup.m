@@ -88,7 +88,7 @@ averageNBag = mean(nBagMeanConf(:));
 if(parameters.alpha ~= 0)
     if(numTargetsLearned ~= 0)
         targets = targetIndexes(:, 1:numTargetsLearned);
-        uniqueness = calculateUniquenessTerm(pDataConfidences, sampleNum, targets, parameters);
+        uniqueness = calculateUniquenessTermLookup(pDataConfidences, sampleNum, targets, parameters);
 
     else
         uniqueness = 0;
@@ -103,7 +103,7 @@ end
 
 end
 
-function [uniqueness] = calculateUniquenessTerm(pDataConfidences, testTargetIndex, targetsIndexes, parameters)
+function [uniqueness] = calculateUniquenessTermLookup(pDataConfidences, testTargetIndex, targetsIndexes, parameters)
 
 %Iterate over target indexes and 
 numTargets = size(targetsIndexes,2);
