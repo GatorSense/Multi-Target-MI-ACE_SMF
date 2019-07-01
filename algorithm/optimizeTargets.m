@@ -9,7 +9,7 @@ nDim = size(data.dataBags{1}, 2);
 nPBags = sum(data.labels == parameters.posLabel);
 
 % Whiten Data
-[b_mu, b_cov, dataBagsWhitened] = whitenData(data, parameters);
+[dataBagsWhitened, dataInfo] = whitenData(data, parameters);
 pDataBags = dataBagsWhitened(data.labels == parameters.posLabel);
 nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
 
