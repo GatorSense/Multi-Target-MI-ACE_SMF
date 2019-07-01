@@ -10,8 +10,8 @@ nPBags = sum(data.labels == parameters.posLabel);
 
 % Whiten Data
 [dataBagsWhitened, dataInfo] = whitenData(data, parameters);
-pDataBags = dataBagsWhitened(data.labels == parameters.posLabel);
-nDataBags = dataBagsWhitened(data.labels == parameters.negLabel);
+pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
+nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
 
 %Precompute term 2 in update equation
 nMean = zeros(length(nDataBags), nDim);
