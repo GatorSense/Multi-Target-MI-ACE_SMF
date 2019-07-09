@@ -51,11 +51,11 @@ for i = 1:5
     
     % Adaptive Cosine Estimator (ACE)
     if parameters.methodFlag
-        [confs_data,confs_max,confs_idx,mu,siginv] = ace_det(test_spec', results.optTargets', results.b_mu', results.sig_inv_half'*results.sig_inv_half',0);
+        [confs_data,confs_max,confs_idx,mu,siginv] = ace_det(test_spec', results.optTargets', results.b_mu', results.sig_inv_half'*results.sig_inv_half,0);
         
     % Spectral Match Filter (SMF)
     else
-        [confs_data,confs_max,confs_idx,mu,siginv] = smf_det(test_spec', results.optTargets', results.b_mu', results.sig_inv_half'*results.sig_inv_half',0);
+        [confs_data,confs_max,confs_idx,mu,siginv] = smf_det(test_spec', results.optTargets', results.b_mu', results.sig_inv_half'*results.sig_inv_half,0);
     end
     
     %% Calculate ROC curve
