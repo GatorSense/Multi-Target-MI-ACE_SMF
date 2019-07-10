@@ -196,6 +196,14 @@ end
 %Initialize using K Means and picking cluster centers that maximize objective function
 function [initTargets, objectiveValues, C] = init2(pDataBags, nDataBags, parameters)
 
+    %Potential error handling
+    if(parameters.numTargets > parameters.numClusters)
+        msg = ['You must have more clusters than the number of targets set in the parameters' newline ...
+        blanks(5) 'Number of clusters (parameters): ' num2str(parameters.numClusters) newline ...
+        blanks(5) 'Number of targets (parameters): ' num2str(parameters.numTargets)];
+        error(msg); 
+    end
+    
     pData = vertcat(pDataBags{:});
 
     disp('Clustering Data');
@@ -219,7 +227,7 @@ function [initTargets, objectiveValues, C] = init2(pDataBags, nDataBags, paramet
 
         initTargets(target,:) = C(opt_loc, :);
 
-        C(opt_loc,:) = 0;
+        C(opt_loc,:) = [];
 
         numTargetsLearned = numTargetsLearned + 1;
     end
