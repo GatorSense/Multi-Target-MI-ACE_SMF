@@ -1,7 +1,7 @@
 # Multi-Target MI-ACE and MI-SMF:
 **Multiple Target Multiple Instance Adaptive Cosine Estimator and Spectral Match Filter for Target Detection Using Uncertainly Labeled Data**
 
-_James Bocinsky and Alina Zare_
+_James Bocinsky, Alina Zare, and Susan Meerdink_
 
 If you use this code, cite it: To be completed...
 
@@ -20,9 +20,10 @@ To recursively clone this repository using Git to include the hyperspectral demo
 
      git clone --recursive https://github.com/GatorSense/Multi-Target-MI-ACE_SMF.git
 
-## Demo
+## Demo and Example
 
-Run `simulateHyperspectral.m` in MATLAB.
+For Demo, run `simulateHyperspectral.m` in MATLAB.
+For Example, check out code in exampleMain folder. 
 
 ## Main Functions
 
@@ -52,16 +53,25 @@ The parameters can be set in the following function:
 ```setParameters.m```
 
 The parameters is a MATLAB structure with the following fields:
-1. methodFlag: ACE = 1, SMF = 0
+1. methodFlag: Determine similarity method 
+     * 0: Spectral Match Filter (SMF)
+     * 1: Adaptive Cosine Estimator (ACE)
 2. numTargets: Number of initialized targets
-3. initType: (1) Search through all positive instances or (2) Search through K-Means cluster centers of positive instances
-4. optimize: Optimize targets or not
+3. initType:  Set Initialization method used to obtain initalized targets
+     * 1: Searches all positive instances and greedily selects instances that maximize objective.  
+     * 2: K-Means clusters positive instances and greedily selects cluster centers that maximize objective.
+4. optimize: Determine whether to optimize target signatures
+     * 0: Do not optimize target signatures, only returns initialized targets
+     * 1: Optimize target signatures using MT MI
 5. maxIter: Max number of optimization iterations
-6. globalBackgroundFlag: (1) Use all data or (0) just the negative instances to compute background statistics
+6. globalBackgroundFlag: Determines how the background mean and inverse covariance are calcualted
+     * 0: mean and cov calculated from all data (positive and negative data)
+     * 1: mean and cov calculated from only negative bags
 7. posLabel: Label used for positive bags
 8. negLabel: Label used for negative bags
-9. numClusters: Number of clusters if using initType (2)
-10. alpha: Uniqueness term weight in objective function, set to 0 if you do not want to use the term
+9. numClusters: Number of clusters used for K-Means (only affects if initType 2 used)
+10. alpha: Uniqueness term weight in objective function
+     * set to 0 if you do not want to use the term
 
 ## Inventory
 
@@ -84,6 +94,10 @@ https://github.com/GatorSense/Multi-Target-MI-ACE_SMF
             └── smf_det.m  //compute SMF
     └── exampleMain  //template for your own development
         ├── bagData.m  //template to bag data
+        ├── bagHyperspectral.m //code that bags example data
+        ├── example_data.csv // csv containing example hyperspectral data
+        ├── splitTrainTest.m // code that split example data into training and validation using KFold cross validation
+        ├── roc_example_results.fig //matlab figure displaying roc results from example data
         └── exampleMain.m  //template to set up data and run algorithm
     └── hyperspectralDataSimulationCode  //simulation demo
         ├── parameters.m  //set parameters for simulation demo
