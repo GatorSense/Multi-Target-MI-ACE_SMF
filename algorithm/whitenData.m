@@ -42,14 +42,14 @@ sig_inv_half = D^(-1/2)*U';
 dataWhitened = {};
 nBags = length(data.dataBags);
 nDim = size(data.dataBags{1}, 2);
-for i = 1:nBags
-    m_minus = data.dataBags{i} - repmat(b_mu, [size(data.dataBags{i}, 1), 1]);
+for b = 1:nBags
+    m_minus = data.dataBags{b} - repmat(b_mu, [size(data.dataBags{b}, 1), 1]);
     m_scale = m_minus*sig_inv_half';
     if(parameters.methodFlag)
         denom = sqrt(repmat(sum(m_scale.*m_scale, 2), [1, nDim]));
-        dataWhitened{i} = m_scale./denom;
+        dataWhitened{b} = m_scale./denom;
     else
-        dataWhitened{i} = m_scale;
+        dataWhitened{b} = m_scale;
     end
 end
 
