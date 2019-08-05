@@ -1,19 +1,33 @@
-function results = optimizeTargets(data, initTargets, parameters)
-%{
-    Write ReadMe
-%}
-
+function results = optimizeTargets(initTargets, pDataBags, nDataBags, parameters, dataInfo)
+% Function that evaluates the objective function for multiple target 
+% multiple instance ACE/SMF algorithm to optimize target signatures.
+% INPUTS:
+% 1) initTargets: the initalized target signatures [n_targets, n_dims]
+% 2) pDataBags: a cell array containing the positive bags (already whitened)
+% 3) nDataBags: a cell array containing the negative bags (already whitened)
+% 4) parameters: a structure containing the parameter variables 
+% 5) dataInfo: a structure that contains information about the background.
+%              Not used in the function, but save variables out to results
+%              1) mu: background mean [1, n_dim]
+%              2) cov: background covariance [n_dim, n_dim]
+%              2) invcov: inverse background covariance, [n_dim, n_dim]
+%              3) D: a singular value decomposition of matrix A, such that A = U*D*V'.
+%              4) V: a singular value decomposition of matrix A, such that A = U*D*V'.
+%              5) U: a singular value decomposition of matrix A, such that A = U*D*V'.
+% OUTPUTS:
+% 1) results: a structure containing the following variables:
+%             1) b_mu: background mean [1, n_dim]
+%             2) b_cov: background covariance [n_dim, n_dim]
+%             3) sig_inv_half: inverse background covariance, [n_dim, n_dim]
+%             4) initTargets: the initial target signatures [n_targets, n_dim]
+%             5) methodFlag: value designating which method was used for similarity measure
+%             6) numTargets: the number of target signatures found
+%             7) optTargets: the optimized target signatures [n_opttargets,
+%                n_dim] Might have fewer targets then initTargets
+% -------------------------------------------------------------------------
 %% Set up data
-nBags = length(data.dataBags);
-nDim = size(data.dataBags{1}, 2);
-nPBags = sum(data.labels == parameters.posLabel);
-
-% Whiten Data
-[dataBagsWhitened, dataInfo] = whitenData(data, parameters);
-pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
-nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
-D = dataInfo.D;
-V = dataInfo.V;
+nDim = size(pDataBags{1}, 2);
+nPBags = size(pDataBags, 2);
 
 %Precompute term 2 in update equation
 nMean = zeros(length(nDataBags), nDim);
@@ -118,6 +132,8 @@ end
 
 
 %% Undo whitening
+D = dataInfo.D;
+V = dataInfo.V;
 optTargets = (optTargets*D^(1/2)*V');
 for tar = 1:numLearnedTargets
     optTargets(tar,:) = optTargets(tar,:)/norm(optTargets(tar,:));
@@ -139,14 +155,19 @@ results.numTargets = numLearnedTargets;
 
 end
 
-
-%%
 function [tMean] = calcTargetMean(tarSigs, currentTarInd, parameters)
-
+% Function that calculates the target mean
+% INPUTS:
+% 1) tarSigs: the target signatures [n_targets, n_dim]
+% 2) currentTarInd: the current target index
+% 3 parameters: structure containing parameter settings. Variables used are
+%               alpha
+% OUTPUTS:
+% 1) tMean: the target signatures mean
+% -----------------------------------------------------------------------
 otherTarSigs = tarSigs;
 otherTarSigs(currentTarInd,:) = [];
 tMean = mean(otherTarSigs, 1);
-
 tMean = parameters.alpha * tMean;
 
 end

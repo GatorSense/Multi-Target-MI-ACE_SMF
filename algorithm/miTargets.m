@@ -1,46 +1,44 @@
 function [results, initRunTime] = miTargets(data, parameters)
-%{
-Input: 
-*************************************************************
-data:
-    dataBags: bagged data
-        * a positive bag should have at least one positive instance in it
-        * a negative bag should consist of all negative instances
-
-    labels: labels for dataBags
-        * the labels should be a row vector with labels corresponding to the 
-        * parameters.posLabel and parameters.negLabel where a posLabel corresponds
-        * to a positive bag and a negLabel corresponds to a negative bag.
-        * The index of the label should match the index of the bag in dataBags
-
-parameters:
-    numTargets: how many targets will be learned
-    initType: how the target is initialized. four possible inputs: 1, 2, 3, or 4
-    optimize: (boolean) if target signatures will be optimized or not
-    maxIter: how many possible iterations for optimizing target signature ex) 100
-    methodFlag: (boolean) Use ACE (1) or SMF (0) as similarity measure    
-    globalBackgroundFlag: (boolean) estimate the background mean and inv cov from all data or just negative bags
-    posLabel: what denotes a positive bag's label. ex) 1
-    negLabel: what denotes a negative bag's label. ex) 0
-    abs: taking absolute value of confidences
-    softmaxFlag: (boolean) Not yet implemented, keep set to 0
-    samplePor: (0 -> 1) percentage in decimal form of positive data points used for init type 1
-
-*************************************************************
-
-Output:
-*************************************************************
-results:
-    optTargets: optimized learned target signatures (only returned if optimization done)
-    optObjVal: value from objective function of the target(s) returned after optimization (only returned if optimization done)
-    b_mu: calculated background mean
-    b_cov: calculated background covariance from SVD
-    sig_inv_half: result from SVD calculation
-    initTargets: initialized target signatures (will always be the number set in setParameters.m)
-    methodFlag: method used. ACE (1) vs SMF (0)
-    numTargets: number of learned targets.
-
-%}
+% Calls various functions to whiten data, initalize targets, and optimize 
+% targets using Multiple Target Multiple Instance methodology.  
+% *************************************************************
+% Inputs: 
+% *************************************************************
+% 1) data:
+%     dataBags: bagged data
+%         * a positive bag should have at least one positive instance in it
+%         * a negative bag should consist of all negative instances
+% 
+%     labels: labels for dataBags
+%         * the labels should be a row vector with labels corresponding to the 
+%         * parameters.posLabel and parameters.negLabel where a posLabel corresponds
+%         * to a positive bag and a negLabel corresponds to a negative bag.
+%         * The index of the label should match the index of the bag in dataBags
+% 2) parameters:
+%     numTargets: how many targets will be learned
+%     initType: how the target is initialized. four possible inputs: 1, 2, 3, or 4
+%     optimize: (boolean) if target signatures will be optimized or not
+%     maxIter: how many possible iterations for optimizing target signature ex) 100
+%     methodFlag: (boolean) Use ACE (1) or SMF (0) as similarity measure    
+%     globalBackgroundFlag: (boolean) estimate the background mean and inv cov from all data or just negative bags
+%     posLabel: what denotes a positive bag's label. ex) 1
+%     negLabel: what denotes a negative bag's label. ex) 0
+%     abs: taking absolute value of confidences
+%     softmaxFlag: (boolean) Not yet implemented, keep set to 0
+%     samplePor: (0 -> 1) percentage in decimal form of positive data points used for init type 1
+% *************************************************************
+% Output:
+% *************************************************************
+% 1) results:
+%     optTargets: optimized learned target signatures (only returned if optimization done)
+%     optObjVal: value from objective function of the target(s) returned after optimization (only returned if optimization done)
+%     b_mu: calculated background mean
+%     b_cov: calculated background covariance from SVD
+%     sig_inv_half: result from SVD calculation
+%     initTargets: initialized target signatures (will always be the number set in setParameters.m)
+%     methodFlag: method used. ACE (1) vs SMF (0)
+%     numTargets: number of learned targets.
+% ------------------------------------------------------------------------
 
 %Ensure more positive bags then desired number of targets to learn
 nPBags = sum(data.labels == parameters.posLabel);
@@ -51,336 +49,40 @@ if(nPBags < parameters.numTargets)
     error(msg);
 end
 
-% Whiten Data
+% 1) Whiten Data
 [dataBagsWhitened, dataInfo] = whitenData(data, parameters);
 pDataBags = dataBagsWhitened.dataBags(data.labels ==  parameters.posLabel);
 nDataBags = dataBagsWhitened.dataBags(data.labels == parameters.negLabel);
 
-
-if(isfield(data, 'info'))
-    pBagInfo = data.info(data.labels == parameters.posLabel);
-%     nBagInfo = data.info(data.labels == parameters.negLabel);
-else
-    pBagInfo = 'No Info';
-%     nBagInfo = 'No Info';
-end
-
-%Initialize target concept
+% 2) Initialize target signatures and maximize objective function
 initRunTime = 0;
-% status('Initializing', parameters);
 if(parameters.initType == 1)
+    % Initialize by searching all positive instances and greedily selects
+    % instances that maximizes objective function. 
     timerVal = tic;
-    [initTargets, initTargetLocation, pDataBagNumbers, initObjectiveValue] = init1(pDataBags, nDataBags, parameters);
+    [initTargets, initTargetLocation, pDataBagNumbers, initObjectiveValue] = init.init1(pDataBags, nDataBags, parameters);
     initRunTime = toc(timerVal);
 elseif(parameters.initType == 2)
+    % Initialize by K-means cluster centers and greedily selecting cluster
+    % center that maximizes objective function. 
     timerVal = tic;
-    [initTargets, initObjectiveValue, clustCenters] = init2(pDataBags, nDataBags, parameters);
+    [initTargets, initObjectiveValue, clustCenters] = init.init2(pDataBags, nDataBags, parameters);
     initRunTime = toc(timerVal);
 else
-    keyboard; %invalid initType
+    disp('Invalid initalization parameter. Options are 0, 1, or 2.')
+    return
 end
 
-if(parameters.optimize)
-    results = optimizeTargets(data, initTargets, parameters);
+% 3) Optimize target concepts 
+if parameters.optimize == 0
+    % Do not optimize targets - will return the initialized targets
+    results = init.nonOptTargets(initTargets, parameters, dataInfo);
+elseif parameters.optimize == 1
+    % optmize targets using MT MI methodology
+    results = optimizeTargets(initTargets, pDataBags, nDataBags, parameters, dataInfo);
 else
-    results = nonOptTargets(initTargets, parameters, dataInfo);
-end
-
-end
-
-function [results] = nonOptTargets(initTargets, parameters, dataInfo)
-% Function that executes if non-optimization parameter is set. This does
-% not perform optimization on initial targets using MT MI objective
-% function.
-% INPUTS:
-% 1) initTargets: matrix of initialized target signatures [n_targets, n_dim] 
-%                 (will always be the number set in setParameters.m)
-% 2) parameters: a structure containing parameter variables. Parameters
-%                used in this function: numTargets, methodFlag
-% 3) dataInfo: background calculations (mu, inverse covariance) 
-% OUTPUTS:
-% 1) results: a structure containing the following variables:
-%             1) b_mu: background mean [1, n_dim]
-%             2) b_cov: background covariance [n_dim, n_dim]
-%             3) sig_inv_half: inverse background covariance, [n_dim, n_dim]
-%             4) initTargets: the initial target signatures [n_targets, n_dim]
-%             5) methodFlag: value designating which method was used for similarity measure
-%             6) numTargets: the number of target signatures found
-%             7) optTargets: a string designating optimization was not performed
-% ------------------------------------------------------------------------
-
-% Set up Variables
-D = dataInfo.D;
-V = dataInfo.V;
-
-%Undo whitening
-initTargets = (initTargets*D^(1/2)*V');
-for tar = 1:parameters.numTargets
-	initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
-end
-
-% Save Variables
-results.b_mu = dataInfo.mu;
-results.b_cov = dataInfo.cov;
-results.sig_inv_half = dataInfo.invcov;
-results.initTargets = initTargets;
-results.methodFlag = parameters.methodFlag;
-results.numTargets = size(initTargets,1);
-results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
-
-end
-
-function [initTargets, initTargetLocation, originalPDataBagNumbers, initObjectiveValue] = init1(pDataBags, nDataBags, parameters)
-
-    disp('Initializing Targets');
-
-    pData = vertcat(pDataBags{:});
-    initTargets = [];
-
-    %Compute pDataConfidences
-    [pDataConfidences, pDataBagNumbers] = computePDataSimilarityMatrix(pDataBags);
-    originalPDataBagNumbers = pDataBagNumbers; %Keep a copy for labeling plots
-
-    %Compute nDataConfidences
-    [nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags);
-
-    numPData = size(pData, 1);
-
-    %A boolean matrix to include the sample for a target concept consideration
-    includeMatrix = ones(numPData, 1);
-
-    initTargetLocation = zeros(2, parameters.numTargets);
-    initObjectiveValue = zeros(1, parameters.numTargets);
-
-    %For all targets
-    for target = 1:parameters.numTargets
-
-        disp(['Initializing Target: ' num2str(target)]);
-
-        objectiveValues = -100*ones(1, numPData);
-        averagePBag = 100*ones(numPData, 1);
-        averageNBag = 100*ones(numPData, 1);
-
-        numTargetsLearned = target - 1;
-
-        %After each target is calculated remove pData with that tag
-        samplePBagMaxConfs = 100*ones(numPData, size(pDataBags, 2));
-        %Compute objective function value for every pData sample
-        for sampleNum = 1:numPData
-            %Only consider the samples that don't look like targets we've already chosen
-            if(includeMatrix(sampleNum))
-                [objectiveValues(sampleNum), ~, samplePBagMaxConfs(sampleNum,:), averagePBag(sampleNum), averageNBag(sampleNum)] = evalObjectiveFunctionLookup(numTargetsLearned, initTargetLocation, sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters);
-            end
-        end
-
-        %Take max objective value
-        [initObjectiveValue(1,target), initTargetLocation(1,target)] = max(objectiveValues(:));
-        %Store location and bag number for indexing in objective value function
-        initTargetLocation(2,target) = originalPDataBagNumbers(initTargetLocation(1,target));
-
-        %Extract sample at optTargetLocation
-        initTarget = pData(initTargetLocation(1,target), :);
-        initTarget = initTarget/norm(initTarget);
-
-        initTargets = vertcat(initTargets, initTarget);
-        numTargetsLearned = target;
-
-        removeSimilarThresh = 1;
-        %Remove similar data to target selected
-        [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, removeSimilarThresh);
-
-    end
-
-end
-
-%Initialize using K Means and picking cluster centers that maximize objective function
-function [initTargets, objectiveValues, C] = init2(pDataBags, nDataBags, parameters)
-
-    %Potential error handling
-    if(parameters.numTargets > parameters.numClusters)
-        msg = ['You must have more clusters than the number of targets set in the parameters' newline ...
-        blanks(5) 'Number of clusters (parameters): ' num2str(parameters.numClusters) newline ...
-        blanks(5) 'Number of targets (parameters): ' num2str(parameters.numTargets)];
-        error(msg); 
-    end
-    
-    pData = vertcat(pDataBags{:});
-
-    disp('Clustering Data');
-
-    %Get cluster centers (C)
-    [~, C] = kmeans(pData, min(size(pData, 1), parameters.numClusters), 'MaxIter', parameters.maxIter);
-    
-    initTargets = zeros(parameters.numTargets, size(C,2));
-    numTargetsLearned = 0;
-    for target = 1:parameters.numTargets
-        disp(['Initializing Target: ' num2str(target)]);
-
-        objectiveValues = zeros(1, size(C,1));
-        pBagMaxConf = zeros(size(C,1), size(pDataBags, 2));
-        for j = 1:size(C, 1) %if large amount of data, can make this parfor loop
-            [objectiveValues(j), ~, pBagMaxConf(j,:)] = evalObjectiveFunction(pDataBags, nDataBags, C(j, :), initTargets, numTargetsLearned, parameters);
-        end
-        
-        %Get location of max objective value
-        [~, opt_loc] = max(objectiveValues);
-
-        initTargets(target,:) = C(opt_loc, :);
-
-        C(opt_loc,:) = [];
-
-        numTargetsLearned = numTargetsLearned + 1;
-    end
-    
-    %Normalize targets
-    for target = 1:parameters.numTargets
-        initTargets(target,:) = initTargets(target, :) / norm(initTargets(target, :));
-    end
-
-end
-
-%Removes potential targets that look similar to the target already chosen
-function [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, threshold)
-
-includeMatrix = ones(size(pData, 1), 1);
-
-for target = 1:numTargetsLearned
-    
-    chosenSig = pData(initTargetLocation(target), :);
-
-    similarity = sum(pData.*repmat(chosenSig, [size(pData, 1), 1]), 2);
-
-    %Holds the indexes of pData that need to be excluded for learning the next target (ones should be included, zeros should be excluded)
-    if(threshold == 1)
-        %If threshold = 1, only remove the one datapoint in the include matrix
-        includeMatrix(initTargetLocation(target), 1) = 0;
-    else
-        %Remove datapoints that are similar to the targets already chosen
-        includeMatrix(similarity >= threshold) = 0;
-    end
-
-end
-
-%Zero out pDataBagNumbers that correspond to the pData being removed for considerable targets (this is only computed for the most recently
-%learned target signature)
-if(threshold == 1)
-    %If threshold = 1, only remove the one datapoint in the include matrix
-    pDataBagNumbers(1,initTargetLocation(1,numTargetsLearned)) = 0;
-else
-    %Remove datapoints that are similar to the targets already chosen
-    pDataBagNumbers(similarity >= threshold) = 0;
-end
-
-end
-
-
-function [pDataConfidences, pDataBagNumbers] = computePDataSimilarityMatrix(pDataBags)
-
-pDataBagNumbers = [];
-numPBags = size(pDataBags, 2);
-
-allPData = vertcat(pDataBags{:});
-allPDataNumSamps = size(allPData,1);
-
-%number of dimensions to the data
-dataDimensions = size(pDataBags{1}, 2);
-
-%Store the dataBag number in a vector to be able to know what sample came from what bag in the pDataConfidences, needed for calculating
-%objective function value
-for dataBag = 1:numPBags
-
-    pBagNumSamps = size(pDataBags{dataBag}, 1);
-    
-    bagNumber = dataBag*ones(1, pBagNumSamps);
-    
-    pDataBagNumbers = horzcat(pDataBagNumbers, bagNumber);
-        
-end
-
-%Preallocate pDataConfidences
-pDataConfidences = cell(1, numPBags);
-
-%Calculate the pDataConfidences for each dataBag
-for dataBag = 1:numPBags
-    
-    %Individual positive bag
-    pBag = pDataBags{dataBag};
-    
-    pBagNumSamps = size(pBag, 1);
-    
-    pBagReshape = reshape(pBag, [pBagNumSamps, 1, dataDimensions]);
-    
-    pBagCube = repmat(pBagReshape, 1, allPDataNumSamps);
-    
-    allPDataReshape = reshape(allPData, [1, allPDataNumSamps, dataDimensions]);
-    
-    allPDataCube = repmat(allPDataReshape, pBagNumSamps, 1);
-    
-    %Calculate confidences
-    pBagConfidences = sum(pBagCube.*allPDataCube, 3);
-
-    pDataConfidences{dataBag} = pBagConfidences;
-    
-end
-
-
-end
-
-
-function [nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags)
-
-allPData = vertcat(pDataBags{:});
-allNData = vertcat(nDataBags{:});
-nDataBagNumbers = [];
-
-pDataNumSamples = size(allPData,1);
-
-%Store the dataBag number in a vector to be able to know what sample came from waht bag in the nDataConfidences, needed for calculating
-%objective function value
-for dataBag = 1:size(nDataBags, 2)
-   
-    numSamps = size(nDataBags{dataBag}, 1);
-    
-    %holds the bag number for all the samples in 'dataBag'
-    bagNumber = dataBag*ones(1, numSamps);
-    
-    %Create a long vector that will be used to index nDataConfidences with the bag numbers
-    nDataBagNumbers = horzcat(nDataBagNumbers, bagNumber);
-    
-end
-
-%Preallocate nDataConfidences
-nDataConfidences = cell(1,size(nDataBags, 2));
-
-%Dimensionality of our data
-dataDimensions = size(pDataBags{1}, 2);
-
-%Calculate outside loop for efficiency. Does not depend on negative bag
-pDataReshape = reshape(allPData, [pDataNumSamples, 1, dataDimensions]);
-
-%Had to calculate this for each negative bag because the data was too large for matlab's array size limit
-for dataBag = 1:size(nDataBags, 2)
-    
-    nBagNumSamples = size(nDataBags{dataBag}, 1);
-
-    %Individual positive bag
-    nBag = nDataBags{dataBag};
-
-    %reshape to do matrix wise calculation
-    nBag = reshape(nBag, [1, nBagNumSamples, dataDimensions]);
-
-    %Set up pDataCube for matrix calculation to be of size (numSamples in allPData x numSamples in nBag)
-    pDataCube = repmat(pDataReshape, 1, nBagNumSamples);
-
-    %Set up nBagCube for matrix calculation to be of size(
-    nBagCube = repmat(nBag, pDataNumSamples, 1);
-
-    %Calculate confidences at matrix level
-    nBagNDataConfidences = sum(pDataCube.*nBagCube, 3);
-    
-    %Store each inside a cell list
-    nDataConfidences{dataBag} = nBagNDataConfidences;
-    
+    disp('Invalid optimize parameter. Options are 0 or 1.')
+    return
 end
 
 end
