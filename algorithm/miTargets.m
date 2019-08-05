@@ -76,10 +76,10 @@ end
 % 3) Optimize target concepts 
 if parameters.optimize == 0
     % Do not optimize targets - will return the initialized targets
-    results = init.nonOptTargets(initTargets, parameters, dataInfo);
+    results = opt.nonOptTargets(initTargets, parameters, dataInfo);
 elseif parameters.optimize == 1
     % optmize targets using MT MI methodology
-    results = optimizeTargets(initTargets, pDataBags, nDataBags, parameters, dataInfo);
+    results = opt.optimizeTargets(initTargets, pDataBags, nDataBags, parameters, dataInfo);
 else
     disp('Invalid optimize parameter. Options are 0 or 1.')
     return

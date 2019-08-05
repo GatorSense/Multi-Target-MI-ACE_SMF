@@ -10,6 +10,11 @@ data_table = readtable('example_data.csv','Delimiter',',','ReadVariableNames',1)
 data_meta = table2cell(data_table(:,1:11));
 data_spec = table2array(data_table(:,12:end));
 
+% Formatting Wavelength (for figure of targets)
+wavelength = data_table.Properties.VariableNames(12:end);
+wavelength = erase(wavelength,'x');
+wavelength = str2double(replace(wavelength,'_','.'));
+
 % Remove bad bands
 bbl = [0,0,0,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0];
 data_spec = data_spec(:,find(bbl == 1));
@@ -63,6 +68,7 @@ for i = 1:5
     roc.(char(strcat('iter_',num2str(i)))).x = x;
     roc.(char(strcat('iter_',num2str(i)))).y = y;
     roc.(char(strcat('iter_',num2str(i)))).auc = auc;
+    roc.(char(strcat('iter_',num2str(i)))).targets = results.optTargets;
     
 end
 
@@ -76,7 +82,7 @@ for i = 1:5
     y = roc.(char(strcat('iter_',num2str(i)))).y;
     x = roc.(char(strcat('iter_',num2str(i)))).x;
     line(x,y,'Color',char(color(i)))
-    name_lgd(i) = strcat({'Iter '}, num2str(i), {': '}, num2str(roc.(char(strcat('iter_',num2str(i)))).auc));
+    name_lgd(i) = strcat({'Iter '}, num2str(i), {': '}, num2str(round(roc.(char(strcat('iter_',num2str(i)))).auc,3)));
 end
 title(strcat({'Receiver Operator Characteristic Curve for '} , name_true))
 axis([0 1 0 1])
@@ -90,4 +96,24 @@ lgd = legend(name_lgd,'Location','southeast');
 title(lgd,'AUC')
 grid on
 hold off
-savefig(char(strcat(pwd, '/exampleMain/roc_example_results')))
+
+%% Plot Targets
+figure('units','inches','outerposition',[0 0 7.5 7.5])
+color = {'k','b','g','c','r'};
+name_lgd = {};
+hold on
+y = [-.1,-.12,-.14,-.16,-.18];
+for i = 1:5
+    target = NaN(size(roc.(char(strcat('iter_',num2str(i)))).targets,1),size(wavelength,2));
+    target(:,find(bbl==1)) = roc.(char(strcat('iter_',num2str(i)))).targets;
+    plot(wavelength, target','Color',char(color(i)))
+    text(2200,y(i),strcat({'Iter '}, num2str(i)),'color',char(color(i)),'FontWeight','bold')
+end
+hline = refline(0,0);
+hline.Color = 'k';
+xlim([365 2500])
+ylim([-0.2 0.2])
+title(strcat({'Target Signatures for '} , name_true))
+xlabel('Wavelength (nm)')
+ylabel('Reflectance (mean adjusted)')
+hold off

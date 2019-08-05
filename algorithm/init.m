@@ -1,61 +1,22 @@
 classdef init
-    %This class is for the initialization functions. There are two options
-    %for initialzation of target signatures.
+    % This class is for the initialization functions. There are two options
+    % for initialzation of target signatures.
     % Functions included in this class definition:
-    % nonOptTargets: Function that executes if non-optimization parameter is set. This does
-    %                not perform optimization on initial targets using MT MI objective function.
     % init1: Initialize by searching all positive instances and greedily selects
     %        instances that maximizes objective function.
     % init2: Initialize by K-means cluster centers and greedily selecting cluster
     %        center that maximizes objective function.
+    % evalObjectiveFunctionLookup: This is the objective function of the Multiple Target Multiple Instance
+    %                              ACE/SMF for hyperspectral target detection. This objective function is
+    %                              used to initalize target signatures by maximizing the objective function.
+    % calculateUniquenessTermLookup: calculates the uniqueness term of the
+    %                                objective function for initalization.
     % removeSimilarData: removes data if it too similar to current target signature
     % computePDataSimilarityMatrix: computes similarity among positive bag pixels
-    % computeNDataSimilarityMatrix: computes similarity among negative bag pixels 
+    % computeNDataSimilarityMatrix: computes similarity among negative bag pixels
     % --------------------------------------------------------------------
     
     methods(Static)
-        function [results] = nonOptTargets(initTargets, parameters, dataInfo)
-            % Function that executes if non-optimization parameter is set. This does
-            % not perform optimization on initial targets using MT MI objective
-            % function.
-            % INPUTS:
-            % 1) initTargets: matrix of initialized target signatures [n_targets, n_dim]
-            %                 (will always be the number set in setParameters.m)
-            % 2) parameters: a structure containing parameter variables. Parameters
-            %                used in this function: numTargets, methodFlag
-            % 3) dataInfo: background calculations (mu, inverse covariance)
-            % OUTPUTS:
-            % 1) results: a structure containing the following variables:
-            %             1) b_mu: background mean [1, n_dim]
-            %             2) b_cov: background covariance [n_dim, n_dim]
-            %             3) sig_inv_half: inverse background covariance, [n_dim, n_dim]
-            %             4) initTargets: the initial target signatures [n_targets, n_dim]
-            %             5) methodFlag: value designating which method was used for similarity measure
-            %             6) numTargets: the number of target signatures found
-            %             7) optTargets: a string designating optimization was not performed
-            % ------------------------------------------------------------------------
-            
-            % Set up Variables
-            D = dataInfo.D;
-            V = dataInfo.V;
-            
-            %Undo whitening
-            initTargets = (initTargets*D^(1/2)*V');
-            for tar = 1:parameters.numTargets
-                initTargets(tar,:) = initTargets(tar,:)/norm(initTargets(tar,:));
-            end
-            
-            % Save Variables
-            results.b_mu = dataInfo.mu;
-            results.b_cov = dataInfo.cov;
-            results.sig_inv_half = dataInfo.invcov;
-            results.initTargets = initTargets;
-            results.methodFlag = parameters.methodFlag;
-            results.numTargets = size(initTargets,1);
-            results.optTargets = 'Optimization not performed, change settings in setParameters.m if desired';
-            
-        end
-        
         function [initTargets, initTargetLocation, originalPDataBagNumbers, initObjectiveValue] = init1(pDataBags, nDataBags, parameters)
             % Initialize by searching all positive instances and greedily selects
             % instances that maximizes objective function.
@@ -77,12 +38,12 @@ classdef init
             numPData = size(pData, 1);
             
             %Compute pDataConfidences
-            [pDataConfidences, pDataBagNumbers] = computePDataSimilarityMatrix(pDataBags);
+            [pDataConfidences, pDataBagNumbers] = init.computePDataSimilarityMatrix(pDataBags);
             originalPDataBagNumbers = pDataBagNumbers; %Keep a copy for labeling plots
             
             %Compute negative bag confidence values
-            [nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags);
-     
+            [nDataConfidences, nDataBagNumbers] = init.computeNDataSimilarityMatrix(pDataBags, nDataBags);
+            
             %A boolean matrix to include the sample for a target concept consideration
             includeMatrix = ones(numPData, 1);
             initTargetLocation = zeros(2, parameters.numTargets);
@@ -106,7 +67,7 @@ classdef init
                 for sampleNum = 1:numPData
                     %Only consider the samples that don't look like targets we've already chosen
                     if(includeMatrix(sampleNum))
-                        [objectiveValues(sampleNum), ~, samplePBagMaxConfs(sampleNum,:), averagePBag(sampleNum), averageNBag(sampleNum)] = evalObjectiveFunctionLookup(numTargetsLearned, initTargetLocation, sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters);
+                        [objectiveValues(sampleNum), ~, samplePBagMaxConfs(sampleNum,:), averagePBag(sampleNum), averageNBag(sampleNum)] = init.evalObjectiveFunctionLookup(numTargetsLearned, initTargetLocation, sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters);
                     end
                 end
                 
@@ -116,7 +77,7 @@ classdef init
                 %Store location and bag number for indexing in objective value function
                 initTargetLocation(2,target) = originalPDataBagNumbers(initTargetLocation(1,target));
                 
-                %Extract sample at from the positive bags 
+                %Extract sample at from the positive bags
                 initTarget = pData(initTargetLocation(1,target), :);
                 initTarget = initTarget/norm(initTarget);
                 
@@ -126,7 +87,7 @@ classdef init
                 
                 %Remove similar data to target selected
                 removeSimilarThresh = 1;
-                [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, removeSimilarThresh); 
+                [includeMatrix, pDataBagNumbers] = init.removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, removeSimilarThresh);
             end
         end
         
@@ -168,8 +129,8 @@ classdef init
                 
                 % Loop through cluster centers
                 % Note for future: if large amount of data, can make this parfor loop
-                for j = 1:size(C, 1) 
-                    [objectiveValues(j), ~, pBagMaxConf(j,:)] = evalObjectiveFunction(pDataBags, nDataBags, C(j, :), initTargets, numTargetsLearned, parameters);
+                for j = 1:size(C, 1)
+                    [objectiveValues(j), ~, pBagMaxConf(j,:)] = opt.evalObjectiveFunction(pDataBags, nDataBags, C(j, :), initTargets, numTargetsLearned, parameters);
                 end
                 
                 %Get location of max objective value
@@ -187,12 +148,160 @@ classdef init
             
         end
         
+        function [ objectiveValue, pBagMaxConfSig, pBagMaxConf, averagePBag, averageNBag ] = evalObjectiveFunctionLookup( numTargetsLearned, targetIndexes,...
+                sampleNum, pDataBags, pDataConfidences, pDataBagNumbers, nDataConfidences, nDataBagNumbers, parameters)
+            % This is the objective function of the Multiple Target Multiple Instance
+            % ACE/SMF for hyperspectral target detection. This objective function is
+            % used to initalize target signatures by maximizing the objective function.
+            % INPUTS:
+            % 1) numTargetsLearned: the number of targets learned so far
+            % 2) targetIndexes: the indices of the target signatures
+            % 3) sampleNum: the sample number
+            % 4) pDataBags: a cell array of positive bags (already whitened)
+            % 5) pDataConfidences: The pre-calculated confidences among all positive bag instances
+            % 6) pDataBagNumbers: the number of positive bags
+            % 7) nDataConfidences: The pre-calculated confidences among all negative bag instances
+            % 8) nDataBagNumbers: the number of negative bags
+            % 6) parameters: a structure containing model parameters
+            % OUTPUTS:
+            % 1) objectiveValue: the calculated objective values
+            % 2) pBagMaxConfSig: the signature from the positive bag instance with max confidence
+            % 3) pBagMaxConf: the positive bag instance with max confidence
+            % 4) pBagMaxConfIndex: the index of the positive bag instance with max confidence
+            % ------------------------------------------------------------------------
+            
+            %Setup
+            allPData = vertcat(pDataBags{:});
+            numPBags = size(pDataBags, 2);
+            samplePBagMaxConf = zeros(1, numPBags);
+            pBagMaxConfSig = cell(1, numPBags);
+            
+            %If we've already learned a target, compute the first part of the objective value for those targets
+            if(numTargetsLearned ~= 0)
+                targets = targetIndexes(1, 1:numTargetsLearned);
+                for bag = 1:numPBags
+                    %Check if the bag hasn't had all of it's data removed for potential targets
+                    if(sum(pDataBagNumbers == bag) ~= 0)
+                        targetPBagMaxConf(:, bag) = max(pDataConfidences{bag}(:,targets), [], 1); %Each row is a separate target
+                    else
+                        targetPBagMaxConf(:, bag) = ones(size(targets,2),1);
+                    end
+                end
+                
+                %No targets learned yet, set to -one for when we take the max, we don't want this to affect taking the max confidence
+            else
+                for bag = 1:numPBags
+                    targetPBagMaxConf(1, bag) = -1;
+                end
+            end
+            
+            %Get highest confidence per postive bag
+            for bag = 1:numPBags
+                
+                %Check if the bag hasn't had all of it's data removed for potential targets
+                if(sum(pDataBagNumbers == bag) ~= 0)
+                    %Get max confidence of this bag
+                    [samplePBagMaxConf(1, bag), pBagMaxConfIndex] = max(pDataConfidences{bag}(:, sampleNum)); %Holds the max confidence score for every bag and stores the signatures in pBagMaxConfSig
+                    
+                    %Get actual signature of highest confidence in this bag
+                    pBagMaxConfSig{bag} = allPData(pBagMaxConfIndex, :)';
+                    
+                    %Place holder, set confidence to 0 for this bag, since they have all been removed from the potential targets. This means a previous target has already handled the data in this bag\
+                    %This will not negatively affect the overall result as it will take the max from the previously learned targets
+                else
+                    samplePBagMaxConf(1, bag) = 0;
+                    pBagMaxConfSig{bag} = 1;
+                end
+                
+            end
+            
+            %Take maximum confidence between this datapoint (sampleNum) and all other target signatures already learned 'greedy approach'
+            pBagMaxConf = vertcat(targetPBagMaxConf, samplePBagMaxConf);
+            pBagMaxConf = max(pBagMaxConf, [], 1);
+            
+            
+            %Get average confidence of each negative bag
+            numNBags = max(nDataBagNumbers);
+            nBagMeanConf = zeros(1, numNBags);
+            
+            %If we've already learned a target, compute the second part of the objective value for those targets
+            if(numTargetsLearned ~= 0)
+                targets = targetIndexes(1, 1:numTargetsLearned);
+                for bag = 1:numNBags
+                    targetNBagConf = nDataConfidences{bag}(targets,:); %Get confidences associated with already learned target sigs
+                    sampleNBagConf = nDataConfidences{bag}(sampleNum,:); %Get confidences associated with sampleNum 'potential target sig'
+                    nBagConfs = vertcat(targetNBagConf, sampleNBagConf); %Concatenate confidences
+                    nBagConfs = max(nBagConfs, [], 1); %Take max of these confidences
+                    
+                    nBagMeanConf(:, bag) = mean(nBagConfs(:)); %Take average of the confidences for this bag
+                end
+                
+                %No targets learned yet, set to -1 for when we take the max, we don't want this to affect taking the max confidence
+            else
+                for bag = 1:numPBags
+                    targetNBagConf(1, bag) = -1;
+                end
+            end
+            
+            %Calculate actual objectiveValue
+            averagePBag = mean(pBagMaxConf(:));
+            averageNBag = mean(nBagMeanConf(:));
+            
+            %Calculate uniqueness term
+            if(parameters.alpha ~= 0)
+                if(numTargetsLearned ~= 0)
+                    targets = targetIndexes(:, 1:numTargetsLearned);
+                    uniqueness = init.calculateUniquenessTermLookup(pDataConfidences, sampleNum, targets, parameters);
+                    
+                else
+                    uniqueness = 0;
+                end
+                
+                objectiveValue = averagePBag - averageNBag - uniqueness;
+                
+            else
+                objectiveValue = averagePBag - averageNBag;
+            end
+            
+            
+        end
+        
+        function [uniqueness] = calculateUniquenessTermLookup(pDataConfidences, testTargetIndex, targetsIndexes, parameters)
+            % Function that calculates the uniqueness or diversity promoting term in
+            % the objective function. Alpha controls how similar or diversity
+            % signatures will be.
+            % INPUTS:
+            % 1) pDataConfidences:
+            % 2) testTargetIndex:
+            % 3) targetsIndexes:
+            % 4) parameters: a structure containing model parameters. Variables used in
+            %                this function - alpha
+            % OUTPUTS:
+            % 1) uniqueness: the objective function value for uniqueness
+            
+            %Iterate over target indexes and
+            numTargets = size(targetsIndexes,2);
+            
+            similarities = zeros(1,numTargets);
+            
+            for i = 1:numTargets
+                targetBagNumber = targetsIndexes(2,i);
+                
+                similarities(1,i) = pDataConfidences{targetBagNumber}(1,testTargetIndex);
+            end
+            
+            averageSim = mean(similarities);
+            
+            uniqueness = parameters.alpha * averageSim;
+            
+        end
+        
         function [includeMatrix, pDataBagNumbers] = removeSimilarData(pData, pDataBagNumbers, initTargetLocation, numTargetsLearned, threshold)
             % Removes potential targets that look similar to the target already chosen
             % INPUTS:
             % 1) pData: a matrix of positive bag data
             % 2) pDataBagNumbers: the index locations of positive bag data
-            % 3) initTargetLocation: the location of the initialized targets 
+            % 3) initTargetLocation: the location of the initialized targets
             % 4) numTargetsLearned: the number of targets that have been learned so far.
             % 5) threshold: If threshold = 1, only remove the one datapoint in the include matrix
             %               Else Remove datapoints that are similar to the targets already chosen
@@ -274,7 +383,7 @@ classdef init
                 %Calculate confidences
                 pBagConfidences = sum(pBagCube.*allPDataCube, 3);
                 pDataConfidences{dataBag} = pBagConfidences;
-            end    
+            end
         end
         
         function [nDataConfidences, nDataBagNumbers] = computeNDataSimilarityMatrix(pDataBags, nDataBags)
