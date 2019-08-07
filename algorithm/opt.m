@@ -115,6 +115,7 @@ classdef opt
                 xStarsAll = cell(numLearnedTargets, nPBags);
                 xStarsSimAll = zeros(numLearnedTargets, nPBags);
                 pBagMaxIndex = zeros(numLearnedTargets, nPBags);
+                throwOutTargetInd = zeros(numLearnedTargets, 1);
                 
                 %Compute xStars and xStarsSimilarity to know which signatures to include in optimization
                 for target = 1:numLearnedTargets
@@ -144,9 +145,7 @@ classdef opt
                     %If there are no xStars for this target, throw out the target signature
                     if(sum(maxXStarsSimInd == target) == 0)
                         numLearnedTargets = numLearnedTargets - 1;
-                        optTargets = [optTargets(1:target-1,:); optTargets(target+1:end,:)];
-                        objTracker(iter).val = [objTracker(iter).val(1:target-1); objTracker(iter).val(target+1:end)];
-                        objTracker(iter).target = [objTracker(iter).target(1:target-1,:); objTracker(iter).target(target+1:end,:)];
+                        throwOutTargetInd(target,1) = 1;
                         break;
                     else
                         xStars = cell2mat(xStarsAll(target, maxXStarsSimInd == target));
@@ -154,7 +153,7 @@ classdef opt
                     end
                     
                     %Update the target signature
-                    if(parameters.alpha ~= 0)
+                    if(parameters.alpha ~= 0 && numLearnedTargets > 1)
                         tMean = opt.calcTargetMean(optTargets, target, parameters);
                         t = pMean(target,:) - nMean - tMean;
                     else
@@ -172,6 +171,14 @@ classdef opt
                         targetIterationDoneCount(target) = iter+1;
                     end
                 end
+                
+                %Remove signatures with no xStars
+                if(sum(throwOutTargetInd) > 0)
+                    optTargets(throwOutTargetInd == 1,:) = [];
+                    objTracker(iter).val(throwOutTargetInd == 1) = [];
+                    objTracker(iter).target(throwOutTargetInd == 1,:) = [];
+                end
+                
                 
                 %If every target signature chooses the same positive bag representatives, then it is done optimizing.
                 if(iter ~= 1)
@@ -205,6 +212,7 @@ classdef opt
             results.initTargets = initTargets;
             results.methodFlag = parameters.methodFlag;
             results.numTargets = numLearnedTargets;
+            results.maxXStarsSimInd = maxXStarsSimInd;
             
         end
         
