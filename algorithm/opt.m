@@ -212,7 +212,6 @@ classdef opt
             results.initTargets = initTargets;
             results.methodFlag = parameters.methodFlag;
             results.numTargets = numLearnedTargets;
-            results.maxXStarsSimInd = maxXStarsSimInd;
             
         end
         
