@@ -27,7 +27,8 @@ classdef init
             %                used in this function - number of targets
             % OUTPUTS:
             % 1) initTargets: the initalized target signatures [n_targets, n_dims]
-            % 2) initTargetLocation: the initalized target signatures index location[n_targets, 1]
+            % 2) initTargetLocation: the initalized target signatures index
+            %                        location [n_targets, 2], first column is index in bag, second column is index of bag 
             % 3) originalPDataBagNumbers: the number of original positive bags
             % 4) initObjectiveValue: the objective value from initalizations
             % -------------------------------------------------------------
