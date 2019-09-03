@@ -89,6 +89,12 @@ classdef opt
             nDim = size(pDataBags{1}, 2);
             nPBags = size(pDataBags, 2);
             
+            % If the initialization type was 1, then track locations
+            if parameters.initType == 1
+                trackFlag = 1;
+                locations = parameters.initTargetsLocation;
+            end
+            
             %Precompute term 2 in update equation
             nMean = zeros(length(nDataBags), nDim);
             for j = 1:length(nDataBags)
@@ -177,6 +183,9 @@ classdef opt
                     optTargets(throwOutTargetInd == 1,:) = [];
                     objTracker(iter).val(throwOutTargetInd == 1) = [];
                     objTracker(iter).target(throwOutTargetInd == 1,:) = [];
+                    if trackFlag == 1
+                        locations(throwOutTargetInd == 1,:) = [];
+                    end
                 end
                 
                 
@@ -212,6 +221,8 @@ classdef opt
             results.initTargets = initTargets;
             results.methodFlag = parameters.methodFlag;
             results.numTargets = numLearnedTargets;
+            results.optTargetsLocation = locations;
+            results.initTargetsLocation = parameters.initTargetsLocation;
             
         end
         

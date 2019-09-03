@@ -38,6 +38,10 @@ function [results, initRunTime] = miTargets(data, parameters)
 %     initTargets: initialized target signatures (will always be the number set in setParameters.m)
 %     methodFlag: method used. ACE (1) vs SMF (0)
 %     numTargets: number of learned targets.
+%     initTargetsLocation: ONLY if init 1 is specified. [num_initializedtargets, 2],
+%           first column is index within bag, second column index of bag
+%     optTargetsLocation: ONLY if init 1 is specified. [num_optimizedtargets, 2],
+%           first column is index within bag, second column index of bag
 % ------------------------------------------------------------------------
 
 %Ensure more positive bags then desired number of targets to learn
@@ -61,6 +65,7 @@ if(parameters.initType == 1)
     % instances that maximizes objective function. 
     timerVal = tic;
     [initTargets, initTargetLocation, pDataBagNumbers, initObjectiveValue] = init.init1(pDataBags, nDataBags, parameters);
+    parameters.initTargetsLocation = transpose(initTargetLocation); % adds to parameter list for optimization
     initRunTime = toc(timerVal);
 elseif(parameters.initType == 2)
     % Initialize by K-means cluster centers and greedily selecting cluster
