@@ -93,6 +93,8 @@ classdef opt
             if parameters.initType == 1
                 trackFlag = 1;
                 locations = parameters.initTargetsLocation;
+            else
+                trackFlag = 0;
             end
             
             %Precompute term 2 in update equation
@@ -221,8 +223,10 @@ classdef opt
             results.initTargets = initTargets;
             results.methodFlag = parameters.methodFlag;
             results.numTargets = numLearnedTargets;
-            results.optTargetsLocation = locations;
-            results.initTargetsLocation = parameters.initTargetsLocation;
+            if trackFlag == 1
+                results.optTargetsLocation = locations;
+                results.initTargetsLocation = parameters.initTargetsLocation;
+            end
             
         end
         
