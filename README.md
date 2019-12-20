@@ -113,12 +113,24 @@ This product is Copyright (c) 2019 J. Bocinsky and A. Zare. All rights reserved.
 
 ## <a name="Citing"></a>Citing Multi-target MI-ACE and MI-SMF
 
-If you use the Multi-target MI-ACE or Multi-target MI-SMF algorithm, please cite the following reference using the following BibTeX entries. To be completed...
+If you use the Multi-target MI-ACE or Multi-target MI-SMF algorithm, please cite the following reference using the following BibTeX entries.
 ```
-@article{Bo2019multi,
-  title={To be completed},
-  author={Bocinsky, James},
-  journal={arXiv preprint arXiv:To be completed},
-  year={2019}
+@MastersThesis{Bocinsky2019Thesis,
+author = {James Bocinsky},
+title = {Learning Multiple Target Concepts from Uncertain, Ambiguous Data Using the Adaptive Cosine Estimator and Spectral Match Filter},
+school = {Univ. of Florida},
+year = {2019},
+address = {Gainesville, FL},
+month = {May},
 }
 ```       
+```
+@Article{Meerdink2019DevelopingSpectralLibrariesMTMIACE,  
+Title = {Developing Spectral Libraries Using Multiple Target Multiple Instance Adaptive Cosine/Coherence Estimator}, 
+Author = {S. Meerdink and J. Bocinsky and E. Wetherley and A. Zare and C. McCurley and P. Gader},  
+Booktitle={10th Workshop on Hyperspectral Imaging and Signal Processing: Evolution in Remote Sensing (WHISPERS)}
+Year = {2019},  
+month={Sep.},  
+pages={1-5},
+}
+```
