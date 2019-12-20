@@ -3,7 +3,7 @@
 
 _James Bocinsky, Alina Zare, and Susan Meerdink_
 
-If you use this code, cite it: To be completed...
+If you use this code, cite it:
 
 [[`BibTeX`](#Citing)]
 
