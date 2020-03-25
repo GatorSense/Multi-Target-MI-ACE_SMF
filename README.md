@@ -5,7 +5,8 @@ _James Bocinsky, Susan Meerdink, Connor H. McCurley, and Alina Zare_
 
 If you use this code, please cite it as: 
 
-James Bocinsky, Susan Meerdink, Connor H. McCurley, & Alina Zare. (2020, March 25). GatorSense/Multi-Target-MI-ACE_SMF: Initial release (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.3727217 [![DOI](https://zenodo.org/badge/126838417.svg)](https://zenodo.org/badge/latestdoi/126838417)
+James Bocinsky, Susan Meerdink, Connor H. McCurley, & Alina Zare. (2020, March 25). GatorSense/Multi-Target-MI-ACE_SMF: Initial release (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.3727217 
+[![DOI](https://zenodo.org/badge/126838417.svg)](https://zenodo.org/badge/latestdoi/126838417)
 
 S.K. Meerdink, J. Bocinsky, A. Zare, N. Kroeger, C. H. McCurley, D. Shats and P.D. Gader. “Multi-Target Multiple Instance Learning for Hyperspectral Target Detection,” in IEEE TGRS, Under Review. https://arxiv.org/abs/1909.03316
 
