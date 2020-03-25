@@ -3,7 +3,8 @@ clear all; clc; close all; close all hidden;
 % This will stop in debug mode if an error occurs so that you can examine all data, save whatever, etc.
 dbstop if error
 
-[sim,targets,train_params,test_params] = parameters();
+[sim,train_params,test_params] = parametersSimExample();
+load('E_truth.mat')
 
 results = {};
 algName = {};
@@ -20,52 +21,46 @@ for iter = 1:sim.NumReps
     disp(['Run ',num2str(iter),' of ',num2str(sim.NumReps)]);
     
     %Generate Testing Data
-    test = gen_2tar_data(targets,test_params);
+    [test,P,labels_bag,test_labels_point,bag_number,data] = gen_2tar_data(E_truth,test_params);
     
     %Generate Training Data
     if(sim.train_on_test)
         train = test;
     else
-        train = gen_2tar_data(targets,train_params);
-        train.X = train.X/max(sqrt(sum(train.X.^2,1)));
+        [X,P,labels_bag,labels_point,bag_number,train] = gen_2tar_data(E_truth,train_params);
     end
-    
     pDataBags = train.dataBags(train.labels == 1);
     nDataBags = train.dataBags(train.labels == 0);
-
-    n_settings = 1;
 
     % Set Parameters
     mi_params = setParameters();
 
-    %Setting to let MTMIACE know this is simulated data
-    mi_params.simulatedData = 1;
-
     %Run Using new miTargets function
     timerVal = tic;
-    results{iter,n_settings} = miTargets(train,mi_params);
+    results{iter} = miTargets(train,mi_params);
     timeToRun = toc(timerVal);
-%             algName{iter,n_settings} = multiMTMIACEExcelSettings{n_settings, 'plotTitle'}{1};
+    
+    % Save Results
     if(mi_params.methodFlag)
-        algName{iter,n_settings} = 'Multi-target MI-ACE';
+        algName{iter} = 'Multi-target MI-ACE';
     else
-        algName{iter,n_settings} = 'Multi-target MI-SMF';
+        algName{iter} = 'Multi-target MI-SMF';
     end
-    runTime{iter,n_settings} = timeToRun;
+    runTime{iter} = timeToRun;
 
 
     ace_out = [];
-    for i = 1:results{iter,n_settings}.numTargets
+    for i = 1:results{iter}.numTargets
         if(mi_params.methodFlag)
-            out = ace_det(test.X ,results{iter,n_settings}.optTargets(i,:)', results{iter,n_settings}.b_mu', results{iter,n_settings}.sig_inv_half'*results{iter,n_settings}.sig_inv_half)';
+            out = ace_det(test,results{iter}.optTargets(i,:)',results{iter}.b_mu',results{iter}.sig_inv_half'*results{iter}.sig_inv_half,1)';
         else
-            out = smf_det(test.X ,results{iter,n_settings}.optTargets(i,:)', results{iter,n_settings}.b_mu', results{iter,n_settings}.sig_inv_half'*results{iter,n_settings}.sig_inv_half)';
+            out = smf_det(test,results{iter}.optTargets(i,:)',results{iter}.b_mu',results{iter}.sig_inv_half'*results{iter}.sig_inv_half,1)';
         end
         ace_out = horzcat(ace_out,out);
     end
     ace_out = max(ace_out,[],2);
-    [results{iter,n_settings}.xx, results{iter,n_settings}.yy, ~, results{iter,n_settings}.auc] = perfcurve(test.labels_point,ace_out,1);
-    AUC{iter,n_settings} = results{iter,n_settings}.auc;
+    [results{iter}.xx, results{iter}.yy, ~, results{iter}.auc] = perfcurve(test_labels_point,ace_out,1);
+    AUC{iter} = results{iter}.auc;
     
     %Plot learned target concepts and ROC
     sig_roc(results,algName);
