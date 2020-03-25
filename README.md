@@ -11,6 +11,7 @@ James Bocinsky, Susan Meerdink, Connor H. McCurley, & Alina Zare. (2020, March 2
 
 [![DOI](https://zenodo.org/badge/126838417.svg)](https://zenodo.org/badge/latestdoi/126838417)
 
+The associated paper is: 
 S.K. Meerdink, J. Bocinsky, A. Zare, N. Kroeger, C. H. McCurley, D. Shats and P.D. Gader. “Multi-Target Multiple Instance Learning for Hyperspectral Target Detection,” in IEEE TGRS, Under Review. https://arxiv.org/abs/1909.03316
 
 In this repository, we provide the papers and code for the Multi-Target MI-ACE and MI-SMF Algorithm.
