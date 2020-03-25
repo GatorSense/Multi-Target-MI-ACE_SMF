@@ -1,11 +1,12 @@
 # Multi-Target MI-ACE and MI-SMF:
 **Multiple Target Multiple Instance Adaptive Cosine Estimator and Spectral Match Filter for Target Detection Using Uncertainly Labeled Data**
 
-_James Bocinsky, Alina Zare, and Susan Meerdink_
+_James Bocinsky, Susan Meerdink, and Alina Zare_
 
-If you use this code, cite it:
+If you use this code, please cite it as: 
 
-[[`BibTeX`](#Citing)]
+S.K. Meerdink, J. Bocinsky, A. Zare, N. Kroeger, C. H. McCurley, D. Shats and P.D. Gader. “Multi-Target Multiple Instance Learning for Hyperspectral Target Detection,” in IEEE TGRS, Under Review. https://arxiv.org/abs/1909.03316
+
 
 In this repository, we provide the papers and code for the Multi-Target MI-ACE and MI-SMF Algorithm.
 
@@ -22,8 +23,7 @@ To recursively clone this repository using Git to include the hyperspectral demo
 
 ## Demo and Example
 
-For Demo, run `simulateHyperspectral.m` in MATLAB.
-For Example, check out code in exampleMain folder. 
+This code has two examples, exampleSimulate.m and examplePFT.m which mirrors experiments #1 and #3 in the paper. Both of these can be found in the exampleMain folder.
 
 ## Main Functions
 
@@ -98,11 +98,9 @@ https://github.com/GatorSense/Multi-Target-MI-ACE_SMF
         ├── example_data.csv // csv containing example hyperspectral data
         ├── splitTrainTest.m // code that split example data into training and validation using KFold cross validation
         ├── roc_example_results.fig //matlab figure displaying roc results from example data
-        └── exampleMain.m  //template to set up data and run algorithm
-    └── hyperspectralDataSimulationCode  //simulation demo
+        └── examplePFT.m  //template to set up data and run algorithm
         ├── parameters.m  //set parameters for simulation demo
-        └── simulateHyperspectral.m  //run simulation demo
-        
+        └── exampleSimulate.m  //run simulation demo	        
 ```
 
 ## License
@@ -113,7 +111,17 @@ This product is Copyright (c) 2019 J. Bocinsky and A. Zare. All rights reserved.
 
 ## <a name="Citing"></a>Citing Multi-target MI-ACE and MI-SMF
 
-If you use the Multi-target MI-ACE or Multi-target MI-SMF algorithm, please cite the following reference using the following BibTeX entries.
+If you use the Multi-target MI-ACE or Multi-target MI-SMF algorithm, please cite the following reference using the following BibTeX entries.      
+```
+@Article{Meerdink2020,  
+Title = {Developing Spectral Libraries Using Multiple Target Multiple Instance Adaptive Cosine/Coherence Estimator}, 
+Author = {S. Meerdink and J. Bocinsky and A. Zare and N. Kroeger and C. McCurley and D. Shats and P. Gader},  
+Booktitle={Multi-Target Multiple Instance Learning for Hyperspectral Target Detection}
+Year = {under review},  
+}
+```       
+
+For more information, you can also check out:
 ```
 @MastersThesis{Bocinsky2019Thesis,
 author = {James Bocinsky},
@@ -123,14 +131,4 @@ year = {2019},
 address = {Gainesville, FL},
 month = {May},
 }
-```       
-```
-@Article{Meerdink2019DevelopingSpectralLibrariesMTMIACE,  
-Title = {Developing Spectral Libraries Using Multiple Target Multiple Instance Adaptive Cosine/Coherence Estimator}, 
-Author = {S. Meerdink and J. Bocinsky and E. Wetherley and A. Zare and C. McCurley and P. Gader},  
-Booktitle={10th Workshop on Hyperspectral Imaging and Signal Processing: Evolution in Remote Sensing (WHISPERS)}
-Year = {2019},  
-month={Sep.},  
-pages={1-5},
-}
-```
+``` 

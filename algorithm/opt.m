@@ -227,7 +227,6 @@ classdef opt
                 results.optTargetsLocation = locations;
                 results.initTargetsLocation = parameters.initTargetsLocation;
             end
-            
         end
         
         function [objectiveValue, pBagMaxConfSig, pBagMaxConf, pBagMaxConfIndex] = evalObjectiveFunction(pDataBags, nDataBags, targetSignature, targets, numTargetsLearned, parameters)
