@@ -3,7 +3,9 @@
 
 _James Bocinsky, Susan Meerdink, Connor H. McCurley, and Alina Zare_
 
-**If you use this code, please cite it as: **
+---
+
+If you use this code, please cite it as:
 
 James Bocinsky, Susan Meerdink, Connor H. McCurley, & Alina Zare. (2020, March 25). GatorSense/Multi-Target-MI-ACE_SMF: Initial release (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.3727217 
 
