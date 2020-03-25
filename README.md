@@ -1,12 +1,13 @@
 # Multi-Target MI-ACE and MI-SMF:
 **Multiple Target Multiple Instance Adaptive Cosine Estimator and Spectral Match Filter for Target Detection Using Uncertainly Labeled Data**
 
-_James Bocinsky, Susan Meerdink, and Alina Zare_
+_James Bocinsky, Susan Meerdink, Connor H. McCurley, and Alina Zare_
 
 If you use this code, please cite it as: 
 
-S.K. Meerdink, J. Bocinsky, A. Zare, N. Kroeger, C. H. McCurley, D. Shats and P.D. Gader. “Multi-Target Multiple Instance Learning for Hyperspectral Target Detection,” in IEEE TGRS, Under Review. https://arxiv.org/abs/1909.03316
+James Bocinsky, Susan Meerdink, Connor H. McCurley, & Alina Zare. (2020, March 25). GatorSense/Multi-Target-MI-ACE_SMF: Initial release (Version v1.0). Zenodo. http://doi.org/10.5281/zenodo.3727217 [![DOI](https://zenodo.org/badge/126838417.svg)](https://zenodo.org/badge/latestdoi/126838417)
 
+S.K. Meerdink, J. Bocinsky, A. Zare, N. Kroeger, C. H. McCurley, D. Shats and P.D. Gader. “Multi-Target Multiple Instance Learning for Hyperspectral Target Detection,” in IEEE TGRS, Under Review. https://arxiv.org/abs/1909.03316
 
 In this repository, we provide the papers and code for the Multi-Target MI-ACE and MI-SMF Algorithm.
 
